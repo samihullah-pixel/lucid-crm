@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lucid* — Cleaning Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@200;300;400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --black: #080808;
+    --white: #ffffff;
+    --grey: #999999;
+    --light: #f7f6f4;
+    --gold: #c9a96e;
+    --gold-light: #e8d5a3;
+    --gold-dark: #9a7a45;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Jost', Helvetica, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--white); color: var(--black); font-family: var(--sans); font-weight: 300; overflow-x: hidden; }
+
+  .shimmer-text {
+    background: linear-gradient(90deg, var(--gold-dark) 0%, var(--gold-light) 40%, var(--gold) 60%, var(--gold-dark) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+  }
+
+  @keyframes shimmer {
+    from { background-position: 200% center; }
+    to { background-position: -200% center; }
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 26px 60px;
+    background: rgba(255,255,255,0.94);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(201,169,110,0.15);
+  }
+
+  .logo-wrap { display: flex; flex-direction: column; line-height: 1; }
+  .logo-main { font-family: var(--serif); font-size: 28px; font-weight: 300; letter-spacing: 2px; color: var(--black); }
+  .logo-main .star { font-size: 16px; vertical-align: super; color: var(--gold); }
+  .logo-sub { font-family: var(--serif); font-size: 8px; letter-spacing: 4.5px; color: var(--grey); margin-top: 3px; }
+
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a {
+    font-family: var(--sans); font-size: 11px; font-weight: 200; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--black); text-decoration: none;
+    position: relative; transition: color 0.3s;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -3px; left: 0;
+    width: 0; height: 1px; background: var(--gold); transition: width 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a:hover::after { width: 100%; }
+
+  .lang-switcher { display: flex; gap: 14px; }
+  .lang-btn { font-family: var(--sans); font-size: 10px; font-weight: 200; letter-spacing: 2px; background: none; border: none; cursor: pointer; color: var(--grey); transition: color 0.3s; padding: 0; }
+  .lang-btn.active { color: var(--gold); border-bottom: 1px solid var(--gold); }
+  .lang-btn:hover { color: var(--black); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+    padding: 140px 60px 80px; position: relative; overflow: hidden; background: var(--black);
+  }
+
+  .hero::after {
+    content: ''; position: absolute; top: -200px; right: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(201,169,110,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-watermark {
+    position: absolute; right: -40px; bottom: -60px;
+    font-family: var(--serif); font-size: 320px; font-weight: 300;
+    color: rgba(255,255,255,0.025); line-height: 1; pointer-events: none;
+    user-select: none; letter-spacing: -10px;
+  }
+
+  .hero-line {
+    position: absolute; right: 56px; top: 140px; bottom: 80px; width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--gold), transparent); opacity: 0.3;
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 760px; }
+
+  .hero-eyebrow {
+    font-family: var(--sans); font-size: 10px; font-weight: 200; letter-spacing: 6px;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 36px;
+    opacity: 0; animation: fadeUp 1s 0.2s forwards;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .hero-eyebrow::before { content: ''; display: block; width: 40px; height: 1px; background: var(--gold); opacity: 0.5; }
+
+  .hero-title {
+    font-family: var(--serif); font-size: clamp(64px, 9vw, 120px); font-weight: 300;
+    line-height: 0.92; letter-spacing: -2px; color: var(--white); margin-bottom: 44px;
+    opacity: 0; animation: fadeUp 1s 0.4s forwards;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold));
+    background-size: 200% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    animation: shimmer 5s linear infinite;
+  }
+
+  .hero-body {
+    font-family: var(--sans); font-size: 15px; font-weight: 200; line-height: 1.9;
+    color: rgba(255,255,255,0.45); max-width: 460px; margin-bottom: 56px;
+    opacity: 0; animation: fadeUp 1s 0.6s forwards;
+  }
+
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 16px;
+    font-family: var(--sans); font-size: 11px; font-weight: 300; letter-spacing: 4px;
+    text-transform: uppercase; color: var(--black);
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+    background-size: 200% auto; padding: 18px 52px; text-decoration: none;
+    transition: box-shadow 0.3s; opacity: 0; animation: fadeUp 1s 0.8s forwards;
+    position: relative; overflow: hidden;
+  }
+  .hero-cta::before {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s;
+  }
+  .hero-cta:hover::before { left: 140%; }
+  .hero-cta:hover { box-shadow: 0 8px 40px rgba(201,169,110,0.35); }
+
+  .hero-stats {
+    position: absolute; right: 80px; bottom: 80px; z-index: 1;
+    display: flex; flex-direction: column; gap: 32px;
+    opacity: 0; animation: fadeIn 1.5s 1.2s forwards;
+  }
+  .hero-stat-item { text-align: right; }
+  .hero-stat-num { font-family: var(--serif); font-size: 42px; font-weight: 300; color: var(--white); line-height: 1; display: block; }
+  .hero-stat-label { font-family: var(--sans); font-size: 9px; font-weight: 200; letter-spacing: 3px; color: rgba(255,255,255,0.3); text-transform: uppercase; }
+
+  /* ── MARQUEE ── */
+  .marquee-wrap {
+    overflow: hidden; padding: 20px 0; background: var(--black);
+    border-top: 1px solid rgba(201,169,110,0.15);
+    border-bottom: 1px solid rgba(201,169,110,0.15);
+  }
+  .marquee-track { display: flex; gap: 60px; animation: marquee 25s linear infinite; width: max-content; align-items: center; }
+  .marquee-item { font-family: var(--serif); font-size: 13px; font-weight: 300; letter-spacing: 5px; color: rgba(255,255,255,0.2); white-space: nowrap; text-transform: uppercase; }
+  .marquee-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); opacity: 0.4; flex-shrink: 0; }
+
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: var(--sans); font-size: 10px; font-weight: 200; letter-spacing: 5px;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 60px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .section-label::before { content: ''; display: block; width: 30px; height: 1px; background: var(--gold); opacity: 0.5; }
+
+  /* ── SERVICES ── */
+  .services { padding: 140px 60px; background: var(--white); }
+  .services-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: #ebebeb; }
+
+  .service-card {
+    background: var(--white); padding: 56px 44px;
+    transition: background 0.4s; position: relative; overflow: hidden;
+  }
+  .service-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0;
+    width: 0; height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    transition: width 0.4s;
+  }
+  .service-card:hover { background: var(--light); }
+  .service-card:hover::after { width: 100%; }
+
+  .service-num { font-family: var(--serif); font-size: 11px; letter-spacing: 3px; color: var(--gold); margin-bottom: 28px; display: block; }
+  .service-title { font-family: var(--serif); font-size: 30px; font-weight: 300; margin-bottom: 18px; line-height: 1.15; }
+  .service-desc { font-family: var(--sans); font-size: 13px; font-weight: 200; line-height: 2; color: #888; }
+
+  /* ── QUOTE BAND ── */
+  .quote-band {
+    background: var(--black); padding: 90px 60px; text-align: center; position: relative; overflow: hidden;
+  }
+  .quote-band::before {
+    content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%);
+  }
+  .quote-band blockquote {
+    font-family: var(--serif); font-size: clamp(28px, 4vw, 48px); font-weight: 300;
+    font-style: italic; color: var(--white); max-width: 800px; margin: 0 auto 20px;
+    line-height: 1.3; position: relative; z-index: 1;
+  }
+  .quote-band blockquote em {
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold));
+    background-size: 200% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    animation: shimmer 5s linear infinite; font-style: normal;
+  }
+  .quote-attr { font-family: var(--sans); font-size: 10px; font-weight: 200; letter-spacing: 5px; color: rgba(255,255,255,0.25); text-transform: uppercase; position: relative; z-index: 1; }
+
+  /* ── FINCA ── */
+  .finca { background: var(--light); padding: 140px 60px; position: relative; overflow: hidden; }
+  .finca::before {
+    content: 'Finca'; position: absolute; right: -20px; bottom: -40px;
+    font-family: var(--serif); font-size: 220px; font-weight: 300;
+    color: rgba(0,0,0,0.03); pointer-events: none; line-height: 1;
+  }
+  .finca-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center; position: relative; z-index: 1; }
+
+  .finca-title { font-family: var(--serif); font-size: clamp(48px, 6vw, 82px); font-weight: 300; line-height: 0.95; margin-bottom: 28px; letter-spacing: -1px; }
+  .finca-title em {
+    font-style: italic;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold));
+    background-size: 200% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    animation: shimmer 5s linear infinite;
+  }
+
+  .finca-body { font-family: var(--sans); font-size: 14px; font-weight: 200; line-height: 2; color: #777; margin-bottom: 36px; max-width: 420px; }
+
+  .finca-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  .finca-list li { font-family: var(--sans); font-size: 13px; font-weight: 200; color: var(--black); padding-left: 22px; position: relative; transition: color 0.3s; }
+  .finca-list li::before { content: '*'; position: absolute; left: 0; font-family: var(--serif); color: var(--gold); font-size: 16px; line-height: 1.1; }
+  .finca-list li:hover { color: var(--gold); }
+
+  .finca-visual { display: flex; justify-content: center; align-items: center; }
+  .finca-card {
+    width: 320px; height: 420px; background: var(--black);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 44px; position: relative; overflow: hidden;
+  }
+  .finca-card::before { content: ''; position: absolute; inset: 0; border: 1px solid rgba(201,169,110,0.2); pointer-events: none; }
+  .finca-card::after {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(201,169,110,0.12) 0%, transparent 70%);
+  }
+  .finca-card-num {
+    font-family: var(--serif); font-size: 56px; font-weight: 300; line-height: 1; margin-bottom: 12px;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative; z-index: 1;
+  }
+  .finca-card-label { font-family: var(--sans); font-size: 10px; font-weight: 200; letter-spacing: 4px; color: rgba(255,255,255,0.3); text-transform: uppercase; position: relative; z-index: 1; }
+  .finca-card-line { position: absolute; bottom: 0; left: 44px; right: 44px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.4; }
+
+  .cta-gold {
+    display: inline-flex; align-items: center; gap: 16px;
+    font-family: var(--sans); font-size: 11px; font-weight: 300; letter-spacing: 4px;
+    text-transform: uppercase; color: var(--black);
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+    background-size: 200% auto; padding: 16px 44px; text-decoration: none;
+    transition: box-shadow 0.3s; margin-top: 44px; position: relative; overflow: hidden;
+  }
+  .cta-gold::before {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transition: left 0.5s;
+  }
+  .cta-gold:hover::before { left: 150%; }
+  .cta-gold:hover { box-shadow: 0 6px 30px rgba(201,169,110,0.3); }
+
+  /* ── LOCATIONS ── */
+  .locations { display: grid; grid-template-columns: 1fr 1fr; min-height: 60vh; }
+  .location-panel { padding: 100px 80px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+  .location-panel.hamburg { background: var(--black); }
+  .location-panel.palma { background: var(--light); }
+  .location-panel.hamburg::after {
+    content: ''; position: absolute; bottom: -100px; left: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(201,169,110,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .location-city { font-family: var(--serif); font-size: clamp(48px,5vw,72px); font-weight: 300; letter-spacing: -1px; margin-bottom: 4px; position: relative; z-index: 1; }
+  .location-panel.hamburg .location-city { color: var(--white); }
+  .location-panel.palma .location-city { color: var(--black); }
+  .location-country { font-family: var(--sans); font-size: 10px; font-weight: 200; letter-spacing: 5px; text-transform: uppercase; color: var(--gold); margin-bottom: 0; position: relative; z-index: 1; }
+  .location-divider { width: 40px; height: 1px; background: var(--gold); opacity: 0.4; margin: 28px 0; }
+  .location-text { font-family: var(--sans); font-size: 14px; font-weight: 200; line-height: 2; max-width: 340px; position: relative; z-index: 1; }
+  .location-panel.hamburg .location-text { color: rgba(255,255,255,0.35); }
+  .location-panel.palma .location-text { color: #777; }
+
+  /* ── CONTACT ── */
+  .contact { padding: 140px 60px; background: var(--white); display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: start; }
+  .contact-left h2 { font-family: var(--serif); font-size: clamp(40px,5vw,64px); font-weight: 300; line-height: 1.05; margin-bottom: 24px; }
+  .contact-left p { font-family: var(--sans); font-size: 14px; font-weight: 200; line-height: 1.9; color: #888; max-width: 360px; }
+  .contact-form { display: flex; flex-direction: column; gap: 28px; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-group label { font-family: var(--sans); font-size: 10px; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); }
+  .form-group input, .form-group select, .form-group textarea {
+    font-family: var(--sans); font-size: 14px; font-weight: 200;
+    border: none; border-bottom: 1px solid #e0e0e0;
+    padding: 12px 0; background: transparent; color: var(--black); outline: none; transition: border-color 0.3s; width: 100%;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-bottom-color: var(--gold); }
+  .form-group textarea { resize: none; height: 100px; }
+
+  .form-submit {
+    font-family: var(--sans); font-size: 11px; font-weight: 300; letter-spacing: 4px;
+    text-transform: uppercase; color: var(--black);
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+    background-size: 200% auto; border: none; padding: 18px 52px; cursor: pointer;
+    transition: box-shadow 0.3s; align-self: flex-start; margin-top: 8px;
+    position: relative; overflow: hidden;
+  }
+  .form-submit::before {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transition: left 0.5s;
+  }
+  .form-submit:hover::before { left: 150%; }
+  .form-submit:hover { box-shadow: 0 6px 30px rgba(201,169,110,0.3); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid rgba(201,169,110,0.15); padding: 44px 60px;
+    display: flex; justify-content: space-between; align-items: center; background: var(--black);
+  }
+  .footer-logo { font-family: var(--serif); font-size: 20px; font-weight: 300; letter-spacing: 2px; color: var(--white); }
+  .footer-logo .star { color: var(--gold); }
+  .footer-copy { font-family: var(--sans); font-size: 11px; font-weight: 200; letter-spacing: 2px; color: rgba(255,255,255,0.2); }
+  .footer-careers { font-family: var(--sans); font-size: 11px; font-weight: 200; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); text-decoration: none; opacity: 0.7; transition: opacity 0.3s; }
+  .footer-careers:hover { opacity: 1; }
+
+  /* ── LANG ── */
+  [data-lang] { display: none; }
+  .lang-de [data-lang="de"], .lang-en [data-lang="en"], .lang-es [data-lang="es"] { display: block; }
+  .lang-de span[data-lang="de"], .lang-en span[data-lang="en"], .lang-es span[data-lang="es"] { display: inline; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 20px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 120px 24px 60px; }
+    .hero-stats, .hero-line { display: none; }
+    .services { padding: 80px 24px; }
+    .services-grid { grid-template-columns: 1fr; }
+    .quote-band { padding: 60px 24px; }
+    .finca { padding: 80px 24px; }
+    .finca-inner { grid-template-columns: 1fr; gap: 60px; }
+    .finca-visual { display: none; }
+    .locations { grid-template-columns: 1fr; }
+    .location-panel { padding: 60px 24px; }
+    .contact { grid-template-columns: 1fr; gap: 60px; padding: 80px 24px; }
+    footer { flex-direction: column; gap: 16px; padding: 32px 24px; text-align: center; }
+  }
+</style>
+</head>
+<body class="lang-de">
+
+<nav>
+  <div class="logo-wrap">
+    <div class="logo-main">Lucid<span class="star">*</span></div>
+    <div class="logo-sub">Hamburg · Palma</div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#services" data-lang="de">Leistungen</a><a href="#services" data-lang="en">Services</a><a href="#services" data-lang="es">Servicios</a></li>
+    <li><a href="#locations" data-lang="de">Standorte</a><a href="#locations" data-lang="en">Locations</a><a href="#locations" data-lang="es">Ubicaciones</a></li>
+    <li><a href="#contact" data-lang="de">Kontakt</a><a href="#contact" data-lang="en">Contact</a><a href="#contact" data-lang="es">Contacto</a></li>
+    <li><a href="lucid-careers.html" data-lang="de">Karriere</a><a href="lucid-careers.html" data-lang="en">Careers</a><a href="lucid-careers.html" data-lang="es">Carreras</a></li>
+  </ul>
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('de',this)">DE</button>
+    <button class="lang-btn" onclick="setLang('en',this)">EN</button>
+    <button class="lang-btn" onclick="setLang('es',this)">ES</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-watermark">L*</div>
+  <div class="hero-line"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">
+      <span data-lang="de">Premium Reinigungsservice</span>
+      <span data-lang="en">Premium Cleaning Service</span>
+      <span data-lang="es">Servicio de Limpieza Premium</span>
+    </p>
+    <h1 class="hero-title">
+      <span data-lang="de">Sauber.<br/><em>Präzise.</em><br/>Lucid.</span>
+      <span data-lang="en">Clean.<br/><em>Precise.</em><br/>Lucid.</span>
+      <span data-lang="es">Limpio.<br/><em>Preciso.</em><br/>Lucid.</span>
+    </h1>
+    <p class="hero-body">
+      <span data-lang="de">Wir reinigen Büros, Gewerbeimmobilien und Privaträume mit höchsten Ansprüchen — in Hamburg und Palma de Mallorca.</span>
+      <span data-lang="en">We clean offices, commercial properties and private spaces to the highest standards — in Hamburg and Palma de Mallorca.</span>
+      <span data-lang="es">Limpiamos oficinas, inmuebles comerciales y espacios privados con los más altos estándares — en Hamburgo y Palma de Mallorca.</span>
+    </p>
+    <a href="#contact" class="hero-cta">
+      <span data-lang="de">Angebot anfordern</span>
+      <span data-lang="en">Request a Quote</span>
+      <span data-lang="es">Solicitar Presupuesto</span>
+    </a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat-item">
+      <span class="hero-stat-num shimmer-text">100%</span>
+      <span class="hero-stat-label"><span data-lang="de">Zufriedenheit</span><span data-lang="en">Satisfaction</span><span data-lang="es">Satisfacción</span></span>
+    </div>
+    <div class="hero-stat-item">
+      <span class="hero-stat-num" style="color:rgba(255,255,255,0.8)">2</span>
+      <span class="hero-stat-label"><span data-lang="de">Standorte</span><span data-lang="en">Locations</span><span data-lang="es">Ubicaciones</span></span>
+    </div>
+  </div>
+</section>
+
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item">Premium Quality</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Hamburg</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Palma de Mallorca</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Gewerblich</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Commercial</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Finca &amp; Villa</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Lucid*</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Präzision</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Excellence</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Premium Quality</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Hamburg</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Palma de Mallorca</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Gewerblich</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Commercial</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Finca &amp; Villa</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Lucid*</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Präzision</span><span class="marquee-dot"></span>
+    <span class="marquee-item">Excellence</span><span class="marquee-dot"></span>
+  </div>
+</div>
+
+<section class="services reveal" id="services">
+  <div class="section-label"><span data-lang="de">Leistungen</span><span data-lang="en">Services</span><span data-lang="es">Servicios</span></div>
+  <div class="services-grid">
+    <div class="service-card">
+      <span class="service-num">01</span>
+      <h3 class="service-title"><span data-lang="de">Büro &amp; Gewerbe</span><span data-lang="en">Office &amp; Commercial</span><span data-lang="es">Oficina &amp; Comercial</span></h3>
+      <p class="service-desc"><span data-lang="de">Regelmäßige und einmalige Reinigung von Büros, Praxen, Kanzleien und Gewerbeflächen.</span><span data-lang="en">Regular and one-time cleaning of offices, practices, law firms and commercial spaces.</span><span data-lang="es">Limpieza regular y puntual de oficinas, consultorios, despachos y espacios comerciales.</span></p>
+    </div>
+    <div class="service-card">
+      <span class="service-num">02</span>
+      <h3 class="service-title"><span data-lang="de">Privatwohnungen</span><span data-lang="en">Private Residences</span><span data-lang="es">Residencias Privadas</span></h3>
+      <p class="service-desc"><span data-lang="de">Diskreter Premium-Service für anspruchsvolle Privatkunden in Palma und Umgebung.</span><span data-lang="en">Discreet premium service for discerning private clients in Palma and surroundings.</span><span data-lang="es">Servicio premium discreto para clientes privados exigentes en Palma y alrededores.</span></p>
+    </div>
+    <div class="service-card">
+      <span class="service-num">03</span>
+      <h3 class="service-title"><span data-lang="de">Sonderreinigung</span><span data-lang="en">Deep Cleaning</span><span data-lang="es">Limpieza Profunda</span></h3>
+      <p class="service-desc"><span data-lang="de">Grundreinigung, Umzugsreinigung, Bauendreinigung — auf Anfrage und maßgeschneidert.</span><span data-lang="en">Deep cleaning, move-in/out cleaning, post-construction — tailored on request.</span><span data-lang="es">Limpieza a fondo, mudanzas, post-obra — a medida y bajo demanda.</span></p>
+    </div>
+  </div>
+</section>
+
+<div class="quote-band reveal">
+  <blockquote>
+    <span data-lang="de">Reinheit ist keine Kleinigkeit —<br/>sie ist <em>der erste Eindruck.</em></span>
+    <span data-lang="en">Cleanliness is not a detail —<br/>it is <em>the first impression.</em></span>
+    <span data-lang="es">La limpieza no es un detalle —<br/>es <em>la primera impresión.</em></span>
+  </blockquote>
+  <p class="quote-attr">Lucid*</p>
+</div>
+
+<section class="finca reveal">
+  <div class="finca-inner">
+    <div class="finca-text">
+      <div class="section-label"><span data-lang="de">Palma &amp; Umgebung</span><span data-lang="en">Palma &amp; Surroundings</span><span data-lang="es">Palma &amp; Alrededores</span></div>
+      <h2 class="finca-title">
+        <span data-lang="de">Finca-<br/><em>Reinigung.</em></span>
+        <span data-lang="en">Finca<br/><em>Cleaning.</em></span>
+        <span data-lang="es">Limpieza<br/><em>de Finca.</em></span>
+      </h2>
+      <p class="finca-body">
+        <span data-lang="de">Landhäuser, Fincas und Villen auf Mallorca haben besondere Anforderungen. Wir kennen sie. Von der weitläufigen Terrasse bis zum Natursteinboden — diskret, zuverlässig und mit Liebe zum Detail.</span>
+        <span data-lang="en">Country houses, fincas and villas in Mallorca have special requirements. We know them. From the expansive terrace to the natural stone floor — discreet, reliable and with attention to detail.</span>
+        <span data-lang="es">Las casas de campo, fincas y villas en Mallorca tienen necesidades especiales. Las conocemos. Desde la amplia terraza hasta el suelo de piedra natural — discretos, fiables y con atención al detalle.</span>
+      </p>
+      <ul class="finca-list">
+        <li><span data-lang="de">Regelmäßige Unterhaltsreinigung</span><span data-lang="en">Regular maintenance cleaning</span><span data-lang="es">Limpieza de mantenimiento regular</span></li>
+        <li><span data-lang="de">Saisonale Grundreinigung</span><span data-lang="en">Seasonal deep cleaning</span><span data-lang="es">Limpieza profunda estacional</span></li>
+        <li><span data-lang="de">Check-in / Check-out Service</span><span data-lang="en">Check-in / Check-out service</span><span data-lang="es">Servicio check-in / check-out</span></li>
+        <li><span data-lang="de">Pool &amp; Außenanlagen</span><span data-lang="en">Pool &amp; outdoor areas</span><span data-lang="es">Piscina &amp; áreas exteriores</span></li>
+        <li><span data-lang="de">Wäscheservice auf Anfrage</span><span data-lang="en">Laundry service on request</span><span data-lang="es">Servicio de lavandería bajo demanda</span></li>
+      </ul>
+      <a href="#contact" class="cta-gold">
+        <span data-lang="de">Finca-Angebot anfordern</span>
+        <span data-lang="en">Request Finca Quote</span>
+        <span data-lang="es">Solicitar Presupuesto Finca</span>
+      </a>
+    </div>
+    <div class="finca-visual">
+      <div class="finca-card">
+        <div class="finca-card-line"></div>
+        <div class="finca-card-num">Palma*</div>
+        <div class="finca-card-label"><span data-lang="de">Mallorca &amp; Umgebung</span><span data-lang="en">Mallorca &amp; Surroundings</span><span data-lang="es">Mallorca &amp; Alrededores</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="locations reveal" id="locations">
+  <div class="location-panel hamburg">
+    <div class="location-city">Hamburg</div>
+    <div class="location-country">Deutschland</div>
+    <div class="location-divider"></div>
+    <p class="location-text"><span data-lang="de">Unser Heimatmarkt. Büros, Kanzleien und Gewerbeflächen in ganz Hamburg — zuverlässig, diskret und termingenau.</span><span data-lang="en">Our home market. Offices, law firms and commercial spaces across Hamburg — reliable, discreet and punctual.</span><span data-lang="es">Nuestro mercado local. Oficinas y espacios comerciales en toda Hamburgo — fiables, discretos y puntuales.</span></p>
+  </div>
+  <div class="location-panel palma">
+    <div class="location-city">Palma</div>
+    <div class="location-country">Mallorca, España</div>
+    <div class="location-divider"></div>
+    <p class="location-text"><span data-lang="de">Premium-Reinigung für private Residenzen, Fincas und Ferienwohnungen auf Mallorca — mit mediterranem Verständnis für höchste Ansprüche.</span><span data-lang="en">Premium cleaning for private residences, fincas and holiday homes in Mallorca — with Mediterranean understanding of the highest standards.</span><span data-lang="es">Limpieza premium para residencias privadas, fincas y apartamentos vacacionales en Mallorca — con sensibilidad mediterránea.</span></p>
+  </div>
+</section>
+
+<section class="contact reveal" id="contact">
+  <div class="contact-left">
+    <div class="section-label"><span data-lang="de">Kontakt</span><span data-lang="en">Contact</span><span data-lang="es">Contacto</span></div>
+    <h2><span data-lang="de">Angebot<br/>anfordern.</span><span data-lang="en">Request<br/>a quote.</span><span data-lang="es">Solicitar<br/>presupuesto.</span></h2>
+    <p><span data-lang="de">Wir melden uns innerhalb von 24 Stunden mit einem individuellen Angebot.</span><span data-lang="en">We'll get back to you within 24 hours with a personalised quote.</span><span data-lang="es">Nos pondremos en contacto en 24 horas con un presupuesto personalizado.</span></p>
+  </div>
+  <div class="contact-form">
+    <div class="form-group">
+      <label><span data-lang="de">Name</span><span data-lang="en">Name</span><span data-lang="es">Nombre</span></label>
+      <input type="text"/>
+    </div>
+    <div class="form-group">
+      <label><span data-lang="de">E-Mail</span><span data-lang="en">Email</span><span data-lang="es">Correo</span></label>
+      <input type="email"/>
+    </div>
+    <div class="form-group">
+      <label><span data-lang="de">Standort</span><span data-lang="en">Location</span><span data-lang="es">Ubicación</span></label>
+      <select><option>Hamburg</option><option>Palma de Mallorca</option></select>
+    </div>
+    <div class="form-group">
+      <label><span data-lang="de">Leistung</span><span data-lang="en">Service</span><span data-lang="es">Servicio</span></label>
+      <select>
+        <option><span data-lang="de">Büro &amp; Gewerbe</span><span data-lang="en">Office &amp; Commercial</span><span data-lang="es">Oficina &amp; Comercial</span></option>
+        <option><span data-lang="de">Privatwohnung</span><span data-lang="en">Private Residence</span><span data-lang="es">Residencia Privada</span></option>
+        <option><span data-lang="de">Finca &amp; Villa</span><span data-lang="en">Finca &amp; Villa</span><span data-lang="es">Finca &amp; Villa</span></option>
+        <option><span data-lang="de">Sonderreinigung</span><span data-lang="en">Deep Cleaning</span><span data-lang="es">Limpieza Profunda</span></option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label><span data-lang="de">Nachricht</span><span data-lang="en">Message</span><span data-lang="es">Mensaje</span></label>
+      <textarea></textarea>
+    </div>
+    <button class="form-submit"><span data-lang="de">Absenden</span><span data-lang="en">Send</span><span data-lang="es">Enviar</span></button>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Lucid<span class="star">*</span></div>
+  <a href="lucid-careers.html" class="footer-careers"><span data-lang="de">Karriere</span><span data-lang="en">Careers</span><span data-lang="es">Carreras</span></a>
+  <div class="footer-copy">© 2025 Lucid Cleaning Services · Hamburg · Palma</div>
+</footer>
+
+<script>
+  function setLang(lang, btn) {
+    document.body.className = 'lang-' + lang;
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(r => observer.observe(r));
+</script>
+</body>
+</html>

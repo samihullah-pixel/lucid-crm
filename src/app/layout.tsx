@@ -1,0 +1,22 @@
+import "./globals.css";
+import { ReactNode } from "react";
+import { AppShell } from "@/components/layout/app-shell";
+
+export const metadata = {
+  title: "Lucid* CRM",
+  description: "Kunden, Objekte, Einsaetze und Rechnungen verwalten",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <html lang="de">
+      <body>
+        <AppShell>{children}</AppShell>
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" width="320" height="100">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&amp;display=swap');
+    </style>
+  </defs>
+
+  <rect width="320" height="100" fill="#ffffff"/>
+
+  <!-- "Lucid" only, positioned left of center to leave room for * -->
+  <!-- Lucid* as full wordmark, centered on canvas -->
+  <text
+    x="160"
+    y="58"
+    text-anchor="middle"
+    font-family="'Cormorant Garamond', Georgia, serif"
+    font-size="54"
+    font-weight="300"
+    letter-spacing="4"
+    fill="#0a0a0a"
+  >Lucid*</text>
+
+  <!-- Hamburg · Palma centered under "Lucid" (not the asterisk) -->
+  <!-- "Lucid" is approx 5 chars, asterisk is extra. Shift tagline slightly left -->
+  <text
+    x="148"
+    y="78"
+    text-anchor="middle"
+    font-family="'Cormorant Garamond', Georgia, serif"
+    font-size="10"
+    font-weight="300"
+    letter-spacing="5"
+    fill="#999999"
+  >Hamburg · Palma</text>
+
+</svg>

@@ -1,0 +1,335 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum BillingType {
+  PAUSCHAL
+  STUNDENSATZ
+}
+enum IntervalType {
+  EINMALIG
+  TAEGLICH
+  WOECHENTLICH
+  ZWEIWOECHENTLICH
+  MONATLICH
+  NACH_BEDARF
+}
+enum AppointmentStatus {
+  AKTIV
+  PAUSIERT
+}
+enum CleaningJobStatus {
+  GEPLANT
+  ERLEDIGT
+  VERSCHOBEN
+  STORNIERT
+}
+enum ServiceType {
+  UNTERHALTSREINIGUNG
+  FENSTERREINIGUNG
+  TREPPENHAUSREINIGUNG
+  GRUNDREINIGUNG
+  SONDERREINIGUNG
+  BAUENDREINIGUNG
+  DESINFEKTION
+  SONSTIGES
+}
+enum ExtraBillingType {
+  STUNDENSATZ
+  PAUSCHAL
+}
+enum MaterialProvider {
+  DU
+  KUNDE
+  GEMISCHT
+  EXTERN
+}
+enum MaterialBillingType {
+  INKLUSIVE
+  PAUSCHALE
+  NACH_VERBRAUCH
+  SEPARAT
+}
+enum InvoiceStatus {
+  ENTWURF
+  ERSTELLT
+  VERSENDET
+  BEZAHLT
+  STORNIERT
+}
+enum InvoiceItemType {
+  REGELLEISTUNG
+  ZUSATZARBEIT
+  MATERIALPAUSCHALE
+  VERBRAUCHSMATERIAL
+  SERVICEPAUSCHALE
+  SONSTIGES
+}
+model Employee {
+  id            String        @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String?
+  phone         String?
+  color         String?
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  appointments  Appointment[]
+  cleaningJobs  CleaningJob[]
+}
+model Customer {
+  id                String              @id @default(cuid())
+  customerNumber    String              @unique
+  companyName       String
+  contactPerson     String?
+  email             String?
+  phone             String?
+  billingAddress    String?
+  postalCode        String?
+  city              String?
+  paymentTermsDays  Int?                @default(14)
+  vatId             String?
+  notes             String?
+  isActive          Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  properties        Property[]
+  serviceContracts  ServiceContract[]
+  cleaningJobs      CleaningJob[]
+  extraWorks        ExtraWork[]
+  invoices          Invoice[]
+  materialPlans     MaterialAgreement[]
+}
+model Property {
+  id                   String               @id @default(cuid())
+  customerId           String
+  name                 String
+  address              String
+  postalCode           String?
+  city                 String?
+  contactOnSite        String?
+  phoneOnSite          String?
+  accessType           String?
+  accessDetails        String?
+  keyNumber            String?
+  hasAlarmSystem       Boolean              @default(false)
+  alarmNote            String?
+  accessTimes          String?
+  parkingInfo          String?
+  hasElevator          Boolean              @default(false)
+  floor                String?
+  specialAreas         String?
+  safetyInstructions   String?
+  roomList             String?
+  notes                String?
+  isActive             Boolean              @default(true)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  customer             Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  serviceContracts     ServiceContract[]
+  appointments         Appointment[]
+  cleaningJobs         CleaningJob[]
+  extraWorks           ExtraWork[]
+  invoices             Invoice[]
+  materialAgreements   MaterialAgreement[]
+  @@index([customerId])
+}
+model ServiceContract {
+  id                  String          @id @default(cuid())
+  customerId          String
+  propertyId          String
+  title               String
+  serviceType         ServiceType
+  billingType         BillingType
+  flatRatePrice       Decimal?        @db.Decimal(10, 2)
+  hourlyRate          Decimal?        @db.Decimal(10, 2)
+  serviceDescription  String?
+  intervalType        IntervalType
+  weekdays            String?
+  standardHours       Decimal?        @db.Decimal(5, 2)
+  contractStart       DateTime
+  contractEnd         DateTime?
+  isActive            Boolean         @default(true)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  customer            Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  property            Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  appointments        Appointment[]
+  @@index([customerId])
+  @@index([propertyId])
+}
+model Appointment {
+  id                 String              @id @default(cuid())
+  propertyId         String
+  serviceContractId  String?
+  employeeId         String?
+  title              String
+  date               DateTime?
+  intervalType       IntervalType
+  weekdays           Int[]               @default([])
+  startDate          DateTime?
+  startTime          String?
+  endTime            String?
+  standardHours      Decimal?            @db.Decimal(5, 2)
+  status             AppointmentStatus   @default(AKTIV)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  property           Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  serviceContract    ServiceContract?    @relation(fields: [serviceContractId], references: [id], onDelete: SetNull)
+  employee           Employee?           @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  cleaningJobs       CleaningJob[]
+  @@index([propertyId])
+  @@index([serviceContractId])
+  @@index([employeeId])
+}
+model CleaningJob {
+  id                 String              @id @default(cuid())
+  customerId         String
+  propertyId         String
+  appointmentId      String?
+  employeeId         String?
+  date               DateTime
+  startTime          String?
+  endTime            String?
+  workedHours        Decimal?            @db.Decimal(5, 2)
+  serviceType        ServiceType
+  note               String?
+  status             CleaningJobStatus   @default(GEPLANT)
+  billable           Boolean             @default(true)
+  alreadyInvoiced    Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  customer           Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  property           Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  appointment        Appointment?        @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  employee           Employee?           @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  extraWorks         ExtraWork[]
+  @@index([customerId])
+  @@index([propertyId])
+  @@index([appointmentId])
+  @@index([employeeId])
+  @@index([date])
+}
+model ExtraWork {
+  id                   String            @id @default(cuid())
+  customerId           String
+  propertyId           String
+  cleaningJobId        String?
+  date                 DateTime
+  description          String
+  billingType          ExtraBillingType
+  hours                Decimal?          @db.Decimal(5, 2)
+  hourlyRate           Decimal?          @db.Decimal(10, 2)
+  flatRatePrice        Decimal?          @db.Decimal(10, 2)
+  customerApproved     Boolean           @default(false)
+  billable             Boolean           @default(true)
+  alreadyInvoiced      Boolean           @default(false)
+  invoiceId            String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  customer             Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  property             Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  cleaningJob          CleaningJob?      @relation(fields: [cleaningJobId], references: [id], onDelete: SetNull)
+  invoice              Invoice?          @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  @@index([customerId])
+  @@index([propertyId])
+  @@index([cleaningJobId])
+  @@index([invoiceId])
+  @@index([date])
+}
+model MaterialAgreement {
+  id                        String              @id @default(cuid())
+  customerId                String
+  propertyId                String
+  materialProvider          MaterialProvider
+  cleaningSuppliesProvider  MaterialProvider
+  consumablesProvider       MaterialProvider
+  clothServiceProvider      MaterialProvider
+  mopServiceProvider        MaterialProvider
+  materialBillingType       MaterialBillingType
+  cleaningMaterialFlatRate  Decimal?            @db.Decimal(10, 2)
+  serviceFlatRate           Decimal?            @db.Decimal(10, 2)
+  materialNotes             String?
+  storageLocation           String?
+  minimumStockNote          String?
+  orderInterval             IntervalType?
+  lastOrderDate             DateTime?
+  nextOrderDate             DateTime?
+  clothWashInterval         IntervalType?
+  mopWashInterval           IntervalType?
+  clothReplacementInterval  IntervalType?
+  mopReplacementInterval    IntervalType?
+  lastMaintenanceDate       DateTime?
+  isActive                  Boolean             @default(true)
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  customer                  Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  property                  Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  materialItems             MaterialItem[]
+  @@index([customerId])
+  @@index([propertyId])
+}
+model MaterialItem {
+  id                   String             @id @default(cuid())
+  materialAgreementId  String
+  name                 String
+  category             String
+  unit                 String?
+  standardQuantity     Decimal?           @db.Decimal(10, 2)
+  minimumStock         Decimal?           @db.Decimal(10, 2)
+  reorderQuantity      Decimal?           @db.Decimal(10, 2)
+  supplier             String?
+  unitPrice            Decimal?           @db.Decimal(10, 2)
+  billable             Boolean            @default(false)
+  includedInFlatRate   Boolean            @default(true)
+  isActive             Boolean            @default(true)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  materialAgreement    MaterialAgreement  @relation(fields: [materialAgreementId], references: [id], onDelete: Cascade)
+  @@index([materialAgreementId])
+}
+model Invoice {
+  id                 String         @id @default(cuid())
+  customerId         String
+  propertyId         String?
+  invoiceNumber      String         @unique
+  invoiceDate        DateTime
+  servicePeriodFrom  DateTime
+  servicePeriodTo    DateTime
+  netAmount          Decimal        @db.Decimal(10, 2)
+  taxRate            Decimal        @db.Decimal(5, 2)
+  taxAmount          Decimal        @db.Decimal(10, 2)
+  grossAmount        Decimal        @db.Decimal(10, 2)
+  status             InvoiceStatus  @default(ENTWURF)
+  qontoExported      Boolean        @default(false)
+  pdfPath            String?
+  notes              String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  customer           Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  property           Property?      @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  extraWorks         ExtraWork[]
+  items              InvoiceItem[]
+  @@index([customerId])
+  @@index([propertyId])
+  @@index([invoiceDate])
+}
+model InvoiceItem {
+  id            String          @id @default(cuid())
+  invoiceId     String
+  type          InvoiceItemType
+  description   String
+  quantity      Decimal?        @db.Decimal(10, 2)
+  unit          String?
+  unitPrice     Decimal?        @db.Decimal(10, 2)
+  totalPrice    Decimal         @db.Decimal(10, 2)
+  sortOrder     Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  invoice       Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  @@index([invoiceId])
+}
