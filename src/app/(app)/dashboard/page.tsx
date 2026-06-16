@@ -87,9 +87,9 @@ export default async function DashboardPage({
       </div>
 
       <div className="border border-gold/20 bg-white p-6">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="font-serif text-xl font-light text-black">Kalender</h2>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="flex gap-2">
               <Link
                 href={`?view=week&date=${toDateParam(refDate)}`}
@@ -122,7 +122,8 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-px bg-black/10">
+        <div className="overflow-x-auto">
+        <div className="grid min-w-[640px] grid-cols-7 gap-px bg-black/10">
           {weekdayShort.map((w) => (
             <div key={w} className="bg-light p-2 text-center font-sans text-[10px] uppercase tracking-wide text-grey">
               {w}
@@ -160,6 +161,7 @@ export default async function DashboardPage({
               </div>
             );
           })}
+        </div>
         </div>
       </div>
     </div>

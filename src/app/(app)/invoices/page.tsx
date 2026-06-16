@@ -25,6 +25,7 @@ export default async function InvoicesPage() {
         {invoices.length === 0 ? (
           <p className="font-sans text-sm font-light text-grey">Noch keine Rechnungen vorhanden.</p>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-black/10 text-grey text-[11px] uppercase tracking-wide">
@@ -47,6 +48,7 @@ export default async function InvoicesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

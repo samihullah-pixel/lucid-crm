@@ -17,8 +17,22 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-light text-black">
       <div className="mx-auto flex max-w-7xl">
-        <aside className="min-h-screen w-64 bg-black p-8">
-          <div className="mb-12 rounded bg-white p-3">
+        <input type="checkbox" id="mobile-nav-toggle" className="peer hidden" />
+
+        <label
+          htmlFor="mobile-nav-toggle"
+          className="fixed left-4 top-4 z-50 flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-black text-white md:hidden"
+          aria-label="Menue oeffnen/schliessen"
+        >
+          <span className="flex flex-col gap-1">
+            <span className="block h-0.5 w-5 bg-white" />
+            <span className="block h-0.5 w-5 bg-white" />
+            <span className="block h-0.5 w-5 bg-white" />
+          </span>
+        </label>
+
+        <aside className="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full overflow-y-auto bg-black p-8 transition-transform duration-200 peer-checked:translate-x-0 md:static md:translate-x-0">
+          <div className="mb-12 mt-12 rounded bg-white p-3 md:mt-0">
             <img src="/lucid-logo.svg" alt="Lucid*" className="w-full" />
           </div>
           <nav className="space-y-1">
@@ -41,7 +55,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
           </form>
         </aside>
-        <main className="flex-1 p-10">{children}</main>
+
+        <label
+          htmlFor="mobile-nav-toggle"
+          className="fixed inset-0 z-30 hidden bg-black/50 peer-checked:block md:hidden"
+          aria-hidden="true"
+        />
+
+        <main className="min-w-0 flex-1 p-4 pt-20 md:p-10 md:pt-10">{children}</main>
       </div>
     </div>
   );

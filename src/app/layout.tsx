@@ -1,6 +1,5 @@
 import "./globals.css";
 import { ReactNode } from "react";
-import { AppShell } from "@/components/layout/app-shell";
 
 export const metadata = {
   title: "Lucid* CRM",
@@ -14,9 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de">
-      <body>
-        <AppShell>{children}</AppShell>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

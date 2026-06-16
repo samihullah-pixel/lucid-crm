@@ -35,6 +35,7 @@ export default async function EmployeesPage() {
         {employees.length === 0 ? (
           <p className="font-sans text-sm font-light text-grey">Noch keine Mitarbeiter vorhanden.</p>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-black/10 text-grey text-[11px] uppercase tracking-wide">
@@ -92,6 +93,7 @@ export default async function EmployeesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>
