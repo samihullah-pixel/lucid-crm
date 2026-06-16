@@ -14,9 +14,15 @@ export async function middleware(request: NextRequest) {
 
   const isApp = host.startsWith("app.");
   if (isApp && !pathname.startsWith("/login")) {
-    const cookie = request.cookies.get(AUTH_COOKIE)?.value;
-    const expected = await computeAuthToken(process.env.CRM_AUTH_SECRET || "");
-    if (cookie !== expected) {
+    let authenticated = false;
+    try {
+      const cookie = request.cookies.get(AUTH_COOKIE)?.value;
+      const expected = await computeAuthToken(process.env.CRM_AUTH_SECRET || "");
+      authenticated = cookie === expected;
+    } catch (err) {
+      console.error("Auth check failed", err);
+    }
+    if (!authenticated) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/login";
       return NextResponse.redirect(loginUrl);
