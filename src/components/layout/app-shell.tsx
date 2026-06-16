@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import Link from "next/link";
+import { logout } from "@/actions/auth";
 
 const navigation = [
   { href: "/dashboard", label: "Dashboard" },
@@ -31,6 +32,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
+          <form action={logout} className="mt-8 border-t border-white/10 pt-4">
+            <button
+              type="submit"
+              className="font-sans text-[11px] font-light uppercase tracking-[3px] text-grey transition-colors hover:text-gold"
+            >
+              Abmelden
+            </button>
+          </form>
         </aside>
         <main className="flex-1 p-10">{children}</main>
       </div>
