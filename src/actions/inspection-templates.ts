@@ -19,7 +19,7 @@ export async function updateInspectionTemplateMeta(id: string, formData: FormDat
   const propertyId = String(formData.get("propertyId") ?? "").trim() || null;
   await prisma.inspectionTemplate.update({ where: { id }, data: { name, propertyId } });
   revalidatePath("/inspection-templates");
-  revalidatePath(`/inspection-templates/${id}/edit`);
+  redirect("/inspection-templates");
 }
 
 export async function deleteInspectionTemplate(id: string) {
@@ -62,4 +62,6 @@ export async function saveInspectionAreas(
       }
     }
   });
+  revalidatePath("/inspection-templates");
+  redirect("/inspection-templates");
 }
