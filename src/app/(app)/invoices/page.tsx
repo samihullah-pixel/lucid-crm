@@ -62,6 +62,9 @@ export default async function InvoicesPage() {
                           <Link href={`/invoices/${inv.id}/edit`} className="font-sans text-[11px] uppercase tracking-wide text-gold-dark hover:text-gold">
                             Öffnen
                           </Link>
+                          <a href={`/api/invoice-pdf?invoiceId=${inv.id}`} target="_blank" rel="noopener noreferrer" className="font-sans text-[11px] uppercase tracking-wide text-grey hover:text-gold">
+                            PDF
+                          </a>
                           <DeleteButton action={del} confirm={`Rechnung ${inv.invoiceNumber} wirklich löschen?`} />
                         </div>
                       </td>

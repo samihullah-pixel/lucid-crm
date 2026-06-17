@@ -138,9 +138,20 @@ export default async function DashboardPage({
                 key={day.toISOString()}
                 className={`min-h-[90px] bg-white p-2 ${isOutsideMonth ? "opacity-40" : ""}`}
               >
-                <p className={`mb-1 font-sans text-xs ${isToday ? "font-medium text-gold-dark" : "text-grey"}`}>
-                  {day.getDate()}.{day.getMonth() + 1}.
-                </p>
+                <div className="mb-1 flex items-center justify-between">
+                  <p className={`font-sans text-xs ${isToday ? "font-medium text-gold-dark" : "text-grey"}`}>
+                    {day.getDate()}.{day.getMonth() + 1}.
+                  </p>
+                  {!isOutsideMonth && (
+                    <Link
+                      href={`/cleaning-jobs/new?date=${toDateParam(day)}`}
+                      className="font-sans text-[11px] leading-none text-grey opacity-0 hover:text-gold group-hover:opacity-100 hover:opacity-100"
+                      title="Einsatz anlegen"
+                    >
+                      +
+                    </Link>
+                  )}
+                </div>
                 <div className="space-y-1">
                   {dayJobs.slice(0, 3).map((job) => (
                     <Link

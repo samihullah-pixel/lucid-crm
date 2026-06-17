@@ -12,6 +12,7 @@ const navigation = [
   { href: "/extra-works", label: "Zusatzarbeiten" },
   { href: "/invoices", label: "Rechnungen" },
   { href: "/inspection-templates", label: "Aufnahmebögen" },
+  { href: "/hours", label: "Stunden" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

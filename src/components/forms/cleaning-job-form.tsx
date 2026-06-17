@@ -42,11 +42,13 @@ export function CleaningJobForm({
   properties,
   employees,
   initialValues,
+  defaultDate,
 }: {
   customers: Customer[];
   properties: Property[];
   employees: Employee[];
   initialValues?: CleaningJobInitialValues;
+  defaultDate?: Date;
 }) {
   const action = initialValues
     ? updateCleaningJob.bind(null, initialValues.id)
@@ -108,7 +110,7 @@ export function CleaningJobForm({
             name="date"
             type="date"
             required
-            defaultValue={toDateInputValue(initialValues?.date)}
+            defaultValue={toDateInputValue(initialValues?.date ?? defaultDate)}
             className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
           />
         </div>
