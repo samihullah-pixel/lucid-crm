@@ -4,6 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+function revalidateAll() {
+  revalidatePath("/", "layout");
+}
+
 export async function createEmployee(formData: FormData) {
   await prisma.employee.create({
     data: {
@@ -16,7 +20,7 @@ export async function createEmployee(formData: FormData) {
     },
   });
 
-  revalidatePath("/employees");
+  revalidateAll();
   redirect("/employees");
 }
 
@@ -33,12 +37,12 @@ export async function updateEmployee(id: string, formData: FormData) {
     },
   });
 
-  revalidatePath("/employees");
+  revalidateAll();
   redirect("/employees");
 }
 
 export async function deleteEmployee(id: string) {
   await prisma.employee.delete({ where: { id } });
-  revalidatePath("/employees");
+  revalidateAll();
   redirect("/employees");
 }

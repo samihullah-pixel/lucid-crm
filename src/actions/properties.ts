@@ -25,12 +25,16 @@ function buildPropertyData(formData: FormData) {
   };
 }
 
+function revalidateAll() {
+  revalidatePath("/", "layout");
+}
+
 export async function createProperty(formData: FormData) {
   await prisma.property.create({
     data: buildPropertyData(formData),
   });
 
-  revalidatePath("/properties");
+  revalidateAll();
   redirect("/properties");
 }
 
@@ -40,12 +44,12 @@ export async function updateProperty(id: string, formData: FormData) {
     data: buildPropertyData(formData),
   });
 
-  revalidatePath("/properties");
+  revalidateAll();
   redirect("/properties");
 }
 
 export async function deleteProperty(id: string) {
   await prisma.property.delete({ where: { id } });
-  revalidatePath("/properties");
+  revalidateAll();
   redirect("/properties");
 }

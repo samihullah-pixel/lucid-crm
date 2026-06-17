@@ -19,6 +19,10 @@ function buildCustomerData(formData: FormData) {
   };
 }
 
+function revalidateAll() {
+  revalidatePath("/", "layout");
+}
+
 export async function createCustomer(formData: FormData) {
   const customerNumber = await generateCustomerNumber();
 
@@ -29,7 +33,7 @@ export async function createCustomer(formData: FormData) {
     },
   });
 
-  revalidatePath("/customers");
+  revalidateAll();
   redirect("/customers");
 }
 
@@ -39,12 +43,12 @@ export async function updateCustomer(id: string, formData: FormData) {
     data: buildCustomerData(formData),
   });
 
-  revalidatePath("/customers");
+  revalidateAll();
   redirect("/customers");
 }
 
 export async function deleteCustomer(id: string) {
   await prisma.customer.delete({ where: { id } });
-  revalidatePath("/customers");
+  revalidateAll();
   redirect("/customers");
 }
