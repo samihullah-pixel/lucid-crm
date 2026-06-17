@@ -3,7 +3,7 @@ import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/rendere
 
 Font.register({
   family: "Cormorant",
-  src: "https://fonts.gstatic.com/s/cormorantgaramond/v16/co3YmX5slCNuHLi8bLeY9MK7whWMhyjYrEPjuw.ttf",
+  src: "https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhyjypVO7abI26QOD_qE6GnM.ttf",
 });
 
 const INTERVAL_LABELS: Record<string, string> = {
