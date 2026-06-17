@@ -102,7 +102,16 @@ export function InspectionDocument({
 }) {
   const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
   const totalItems = areas.reduce((sum, a) => sum + a.items.length, 0);
-  const totalMinutes = areas.flatMap((a) => a.items).reduce((sum, i) => sum + (i.durationMinutes ?? 0), 0);
+  const allItems = areas.flatMap((a) => a.items);
+  const totalMinutes = allItems.reduce((sum, i) => sum + (i.durationMinutes ?? 0), 0);
+
+  const INTERVAL_ORDER = ["TAEGLICH", "WOECHENTLICH", "ZWEIWOECHENTLICH", "MONATLICH", "QUARTAL", "HALBJAHR", "JAEHRLICH", "NACH_BEDARF"];
+  const byInterval: Record<string, number> = {};
+  for (const item of allItems) {
+    if (item.durationMinutes) byInterval[item.interval] = (byInterval[item.interval] ?? 0) + item.durationMinutes;
+  }
+  const intervalEntries = INTERVAL_ORDER.filter((k) => byInterval[k]);
+  const areaEntries = areas.map((a) => ({ name: a.name, min: a.items.reduce((s, i) => s + (i.durationMinutes ?? 0), 0) })).filter((e) => e.min > 0);
 
   return (
     <Document>
@@ -117,6 +126,49 @@ export function InspectionDocument({
           {propertyName && <Text style={s.propertyName}>Objekt: {propertyName}</Text>}
           <Text style={[s.propertyName, { marginTop: 2 }]}>Erstellt: {today}</Text>
         </View>
+
+        {/* Zeitübersicht */}
+        {totalMinutes > 0 && (
+          <View style={{ borderWidth: 0.5, borderColor: gold, backgroundColor: "#faf8f4", padding: 12, marginBottom: 18 }}>
+            {/* Gesamtzeit */}
+            <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 10 }}>
+              <Text style={{ fontFamily: "Cormorant", fontSize: 18, fontWeight: "light", color: black, marginRight: 8 }}>{fmtMin(totalMinutes)}</Text>
+              <Text style={{ fontSize: 7, color: grey, letterSpacing: 1, textTransform: "uppercase" }}>Gesamtaufwand</Text>
+            </View>
+            <View style={{ height: 0.5, backgroundColor: gold, marginBottom: 10 }} />
+            {/* Zwei Spalten: Intervall | Bereich */}
+            <View style={{ flexDirection: "row", gap: 24 }}>
+              {/* Nach Intervall */}
+              {intervalEntries.length > 0 && (
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 7, color: grey, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>Nach Intervall</Text>
+                  {intervalEntries.map((k) => (
+                    <View key={k} style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
+                      <Text style={{ fontSize: 8, color: grey }}>{INTERVAL_LABELS[k] ?? k}</Text>
+                      <Text style={{ fontSize: 8, color: black, fontWeight: "bold" }}>{fmtMin(byInterval[k])}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+              {/* Trennlinie */}
+              {intervalEntries.length > 0 && areaEntries.length > 0 && (
+                <View style={{ width: 0.5, backgroundColor: "#e8e4dc" }} />
+              )}
+              {/* Nach Bereich */}
+              {areaEntries.length > 0 && (
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 7, color: grey, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>Nach Bereich</Text>
+                  {areaEntries.map((e) => (
+                    <View key={e.name} style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
+                      <Text style={{ fontSize: 8, color: grey }}>{e.name}</Text>
+                      <Text style={{ fontSize: 8, color: black, fontWeight: "bold" }}>{fmtMin(e.min)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          </View>
+        )}
 
         {areas.map((area, aIdx) => (
           <View key={aIdx} wrap={false}>
