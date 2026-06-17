@@ -44,3 +44,9 @@ export async function updateAppointment(id: string, formData: FormData) {
   revalidatePath("/appointments");
   redirect("/appointments");
 }
+
+export async function deleteAppointment(id: string) {
+  await prisma.appointment.delete({ where: { id } });
+  revalidatePath("/appointments");
+  redirect("/appointments");
+}

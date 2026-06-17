@@ -36,3 +36,9 @@ export async function updateEmployee(id: string, formData: FormData) {
   revalidatePath("/employees");
   redirect("/employees");
 }
+
+export async function deleteEmployee(id: string) {
+  await prisma.employee.delete({ where: { id } });
+  revalidatePath("/employees");
+  redirect("/employees");
+}

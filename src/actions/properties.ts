@@ -43,3 +43,9 @@ export async function updateProperty(id: string, formData: FormData) {
   revalidatePath("/properties");
   redirect("/properties");
 }
+
+export async function deleteProperty(id: string) {
+  await prisma.property.delete({ where: { id } });
+  revalidatePath("/properties");
+  redirect("/properties");
+}

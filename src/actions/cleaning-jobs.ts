@@ -42,3 +42,9 @@ export async function updateCleaningJob(id: string, formData: FormData) {
   revalidatePath("/cleaning-jobs");
   redirect("/cleaning-jobs");
 }
+
+export async function deleteCleaningJob(id: string) {
+  await prisma.cleaningJob.delete({ where: { id } });
+  revalidatePath("/cleaning-jobs");
+  redirect("/cleaning-jobs");
+}
