@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, type ReactNode } from "react";
 
 export function DeleteButton({
   action,
@@ -8,7 +8,7 @@ export function DeleteButton({
   confirm: confirmMsg = "Wirklich löschen?",
 }: {
   action: () => Promise<void>;
-  label?: string;
+  label?: ReactNode;
   confirm?: string;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -21,7 +21,7 @@ export function DeleteButton({
         if (!window.confirm(confirmMsg)) return;
         startTransition(() => action());
       }}
-      className="font-sans text-[11px] uppercase tracking-wide text-grey hover:text-red-500 disabled:opacity-40"
+      className="text-grey hover:text-red-500 disabled:opacity-40"
     >
       {isPending ? "…" : label}
     </button>
