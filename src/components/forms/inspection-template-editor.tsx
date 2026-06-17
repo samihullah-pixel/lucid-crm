@@ -116,7 +116,17 @@ export function InspectionTemplateEditor({
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const totalMinutes = areas.flatMap((a) => a.items).reduce((sum, i) => sum + (i.durationMinutes ?? 0), 0);
+  const allItems = areas.flatMap((a) => a.items);
+  const totalMinutes = allItems.reduce((sum, i) => sum + (i.durationMinutes ?? 0), 0);
+
+  const INTERVAL_ORDER = ["TAEGLICH", "WOECHENTLICH", "ZWEIWOECHENTLICH", "MONATLICH", "QUARTAL", "HALBJAHR", "JAEHRLICH", "NACH_BEDARF"];
+  const byInterval: Record<string, number> = {};
+  for (const item of allItems) {
+    if (item.durationMinutes) {
+      byInterval[item.interval] = (byInterval[item.interval] ?? 0) + item.durationMinutes;
+    }
+  }
+  const intervalEntries = INTERVAL_ORDER.filter((k) => byInterval[k]);
 
   function addArea() {
     setAreas((prev) => [...prev, { name: "", order: prev.length, items: [] }]);
@@ -196,21 +206,42 @@ export function InspectionTemplateEditor({
     <div className="space-y-4">
       {/* Gesamtzeit-Zusammenfassung */}
       {totalMinutes > 0 && (
-        <div className="flex flex-wrap gap-6 rounded border border-gold/20 bg-gold/5 px-5 py-3">
-          <div>
+        <div className="rounded border border-gold/20 bg-gold/5 px-5 py-4 space-y-3">
+          {/* Gesamtzeit */}
+          <div className="flex items-baseline gap-3">
             <p className="font-sans text-[10px] uppercase tracking-wide text-grey">Gesamtzeit</p>
             <p className="font-serif text-xl font-light text-black">{fmtMin(totalMinutes)}</p>
           </div>
-          {areas.map((a, i) => {
-            const aMin = a.items.reduce((s, it) => s + (it.durationMinutes ?? 0), 0);
-            if (aMin === 0) return null;
-            return (
-              <div key={i}>
-                <p className="font-sans text-[10px] uppercase tracking-wide text-grey">{a.name || `Bereich ${i + 1}`}</p>
-                <p className="font-sans text-sm font-medium text-black">{fmtMin(aMin)}</p>
+          {/* Nach Intervall */}
+          {intervalEntries.length > 0 && (
+            <div>
+              <p className="mb-2 font-sans text-[10px] uppercase tracking-wide text-grey">Nach Intervall</p>
+              <div className="flex flex-wrap gap-x-6 gap-y-1">
+                {intervalEntries.map((k) => (
+                  <div key={k} className="flex items-baseline gap-2">
+                    <span className="font-sans text-[11px] text-grey">{INTERVALS.find((iv) => iv.value === k)?.label ?? k}</span>
+                    <span className="font-sans text-sm font-medium text-black">{fmtMin(byInterval[k])}</span>
+                  </div>
+                ))}
               </div>
-            );
-          })}
+            </div>
+          )}
+          {/* Nach Bereich */}
+          <div>
+            <p className="mb-2 font-sans text-[10px] uppercase tracking-wide text-grey">Nach Bereich</p>
+            <div className="flex flex-wrap gap-x-6 gap-y-1">
+              {areas.map((a, i) => {
+                const aMin = a.items.reduce((s, it) => s + (it.durationMinutes ?? 0), 0);
+                if (aMin === 0) return null;
+                return (
+                  <div key={i} className="flex items-baseline gap-2">
+                    <span className="font-sans text-[11px] text-grey">{a.name || `Bereich ${i + 1}`}</span>
+                    <span className="font-sans text-sm font-medium text-black">{fmtMin(aMin)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
