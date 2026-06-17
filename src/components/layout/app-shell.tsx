@@ -11,6 +11,7 @@ const navigation = [
   { href: "/cleaning-jobs", label: "Einsaetze" },
   { href: "/extra-works", label: "Zusatzarbeiten" },
   { href: "/invoices", label: "Rechnungen" },
+  { href: "/inspection-templates", label: "Aufnahmebögen" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

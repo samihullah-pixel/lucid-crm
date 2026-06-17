@@ -136,6 +136,7 @@ model Property {
   extraWorks           ExtraWork[]
   invoices             Invoice[]
   materialAgreements   MaterialAgreement[]
+  inspectionTemplates  InspectionTemplate[]
   @@index([customerId])
 }
 model ServiceContract {
@@ -318,6 +319,37 @@ model Invoice {
   @@index([propertyId])
   @@index([invoiceDate])
 }
+model InspectionTemplate {
+  id          String           @id @default(cuid())
+  name        String
+  propertyId  String?
+  property    Property?        @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  areas       InspectionArea[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  @@index([propertyId])
+}
+
+model InspectionArea {
+  id          String             @id @default(cuid())
+  templateId  String
+  template    InspectionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  name        String
+  order       Int                @default(0)
+  items       InspectionItem[]
+  @@index([templateId])
+}
+
+model InspectionItem {
+  id        String         @id @default(cuid())
+  areaId    String
+  area      InspectionArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  label     String
+  interval  String         @default("TAEGLICH")
+  order     Int            @default(0)
+  @@index([areaId])
+}
+
 model InvoiceItem {
   id            String          @id @default(cuid())
   invoiceId     String
