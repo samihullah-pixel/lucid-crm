@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 function buildCleaningJobData(formData: FormData) {
   const employeeIdRaw = String(formData.get("employeeId") ?? "");
@@ -28,6 +29,7 @@ export async function createCleaningJob(formData: FormData) {
     data: buildCleaningJobData(formData),
   });
 
+  revalidatePath("/cleaning-jobs");
   redirect("/cleaning-jobs");
 }
 
@@ -37,5 +39,6 @@ export async function updateCleaningJob(id: string, formData: FormData) {
     data: buildCleaningJobData(formData),
   });
 
+  revalidatePath("/cleaning-jobs");
   redirect("/cleaning-jobs");
 }

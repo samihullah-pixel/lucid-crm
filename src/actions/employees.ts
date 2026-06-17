@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function createEmployee(formData: FormData) {
   await prisma.employee.create({
@@ -15,6 +16,7 @@ export async function createEmployee(formData: FormData) {
     },
   });
 
+  revalidatePath("/employees");
   redirect("/employees");
 }
 
@@ -31,5 +33,6 @@ export async function updateEmployee(id: string, formData: FormData) {
     },
   });
 
+  revalidatePath("/employees");
   redirect("/employees");
 }

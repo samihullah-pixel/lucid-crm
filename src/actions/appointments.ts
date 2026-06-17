@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 function buildAppointmentData(formData: FormData) {
   const weekdays = formData.getAll("weekdays").map(Number).filter((n) => !isNaN(n));
@@ -30,6 +31,7 @@ export async function createAppointment(formData: FormData) {
     data: buildAppointmentData(formData),
   });
 
+  revalidatePath("/appointments");
   redirect("/appointments");
 }
 
@@ -39,5 +41,6 @@ export async function updateAppointment(id: string, formData: FormData) {
     data: buildAppointmentData(formData),
   });
 
+  revalidatePath("/appointments");
   redirect("/appointments");
 }

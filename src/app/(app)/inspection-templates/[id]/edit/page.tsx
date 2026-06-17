@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { updateInspectionTemplateMeta, deleteInspectionTemplate } from "@/actions/inspection-templates";
+import { updateInspectionTemplateMeta } from "@/actions/inspection-templates";
 import { InspectionTemplateEditor } from "@/components/forms/inspection-template-editor";
+import { DeleteTemplateButton } from "@/components/forms/delete-template-button";
 
 export default async function EditInspectionTemplatePage({ params }: { params: { id: string } }) {
   const [template, properties] = await Promise.all([
@@ -22,7 +23,6 @@ export default async function EditInspectionTemplatePage({ params }: { params: {
   if (!template) notFound();
 
   const updateMeta = updateInspectionTemplateMeta.bind(null, template.id);
-  const deleteTemplate = deleteInspectionTemplate.bind(null, template.id);
 
   const initialAreas = template.areas.map((a) => ({
     id: a.id,
@@ -87,15 +87,7 @@ export default async function EditInspectionTemplatePage({ params }: { params: {
           >
             Speichern
           </button>
-          <form action={deleteTemplate}>
-            <button
-              type="submit"
-              onClick={(e) => { if (!confirm("Aufnahmebogen wirklich löschen?")) e.preventDefault(); }}
-              className="font-sans text-[11px] uppercase tracking-wide text-grey hover:text-red-500"
-            >
-              Löschen
-            </button>
-          </form>
+          <DeleteTemplateButton templateId={template.id} />
         </div>
       </form>
 

@@ -1,6 +1,7 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function createInspectionTemplate(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
@@ -9,6 +10,7 @@ export async function createInspectionTemplate(formData: FormData) {
   const template = await prisma.inspectionTemplate.create({
     data: { name, propertyId },
   });
+  revalidatePath("/inspection-templates");
   redirect(`/inspection-templates/${template.id}/edit`);
 }
 
@@ -16,10 +18,13 @@ export async function updateInspectionTemplateMeta(id: string, formData: FormDat
   const name = String(formData.get("name") ?? "").trim();
   const propertyId = String(formData.get("propertyId") ?? "").trim() || null;
   await prisma.inspectionTemplate.update({ where: { id }, data: { name, propertyId } });
+  revalidatePath("/inspection-templates");
+  revalidatePath(`/inspection-templates/${id}/edit`);
 }
 
 export async function deleteInspectionTemplate(id: string) {
   await prisma.inspectionTemplate.delete({ where: { id } });
+  revalidatePath("/inspection-templates");
   redirect("/inspection-templates");
 }
 

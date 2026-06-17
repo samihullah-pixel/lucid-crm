@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { generateCustomerNumber } from "@/lib/customer-number";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 function buildCustomerData(formData: FormData) {
   return {
@@ -28,6 +29,7 @@ export async function createCustomer(formData: FormData) {
     },
   });
 
+  revalidatePath("/customers");
   redirect("/customers");
 }
 
@@ -37,5 +39,6 @@ export async function updateCustomer(id: string, formData: FormData) {
     data: buildCustomerData(formData),
   });
 
+  revalidatePath("/customers");
   redirect("/customers");
 }

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { generateInvoiceNumber } from "@/lib/invoice-number";
 import { calculateInvoiceAmounts } from "@/lib/invoice-calculation";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function createInvoice(formData: FormData) {
   const invoiceNumber = await generateInvoiceNumber();
@@ -29,5 +30,6 @@ export async function createInvoice(formData: FormData) {
     },
   });
 
+  revalidatePath("/invoices");
   redirect("/invoices");
 }

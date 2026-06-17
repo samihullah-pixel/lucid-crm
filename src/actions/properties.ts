@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 function buildPropertyData(formData: FormData) {
   return {
@@ -29,6 +30,7 @@ export async function createProperty(formData: FormData) {
     data: buildPropertyData(formData),
   });
 
+  revalidatePath("/properties");
   redirect("/properties");
 }
 
@@ -38,5 +40,6 @@ export async function updateProperty(id: string, formData: FormData) {
     data: buildPropertyData(formData),
   });
 
+  revalidatePath("/properties");
   redirect("/properties");
 }

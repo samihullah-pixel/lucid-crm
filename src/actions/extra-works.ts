@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function createExtraWork(formData: FormData) {
   await prisma.extraWork.create({
@@ -21,5 +22,6 @@ export async function createExtraWork(formData: FormData) {
     },
   });
 
+  revalidatePath("/extra-works");
   redirect("/extra-works");
 }
