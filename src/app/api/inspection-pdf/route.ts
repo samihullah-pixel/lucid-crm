@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 
   const areas = template.areas.map((a) => ({
     name: a.name,
-    items: a.items.map((i) => ({ label: i.label, interval: i.interval })),
+    items: a.items.map((i) => ({ label: i.label, interval: i.interval, durationMinutes: i.durationMinutes })),
   }));
 
   const buffer = await renderToBuffer(

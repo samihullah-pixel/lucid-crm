@@ -59,9 +59,14 @@ const s = StyleSheet.create({
   },
   rowAlt: { backgroundColor: "#faf9f7" },
   colLabel: { flex: 1, fontSize: 9, color: black },
-  colInterval: { width: 100, fontSize: 9, color: grey, textAlign: "right" },
+  colInterval: { width: 90, fontSize: 9, color: grey, textAlign: "right" },
+  colDuration: { width: 60, fontSize: 9, color: black, textAlign: "right" },
   colHeaderLabel: { flex: 1, fontSize: 7, color: grey, letterSpacing: 0.5, textTransform: "uppercase" },
-  colHeaderInterval: { width: 100, fontSize: 7, color: grey, letterSpacing: 0.5, textTransform: "uppercase", textAlign: "right" },
+  colHeaderInterval: { width: 90, fontSize: 7, color: grey, letterSpacing: 0.5, textTransform: "uppercase", textAlign: "right" },
+  colHeaderDuration: { width: 60, fontSize: 7, color: grey, letterSpacing: 0.5, textTransform: "uppercase", textAlign: "right" },
+  areaTotal: { flexDirection: "row" as const, backgroundColor: "#f0ebe0", paddingHorizontal: 8, paddingVertical: 4 },
+  areaTotalText: { flex: 1, fontSize: 7, color: grey },
+  areaTotalVal: { width: 60, fontSize: 7, color: black, textAlign: "right" as const, fontWeight: "bold" as const },
   footer: {
     position: "absolute",
     bottom: 30,
@@ -76,7 +81,14 @@ const s = StyleSheet.create({
   footerText: { fontSize: 7, color: grey },
 });
 
-type Item = { label: string; interval: string };
+function fmtMin(min: number) {
+  if (min < 60) return `${min} Min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m === 0 ? `${h} Std` : `${h} Std ${m} Min`;
+}
+
+type Item = { label: string; interval: string; durationMinutes?: number | null };
 type Area = { name: string; items: Item[] };
 
 export function InspectionDocument({
@@ -90,6 +102,7 @@ export function InspectionDocument({
 }) {
   const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
   const totalItems = areas.reduce((sum, a) => sum + a.items.length, 0);
+  const totalMinutes = areas.flatMap((a) => a.items).reduce((sum, i) => sum + (i.durationMinutes ?? 0), 0);
 
   return (
     <Document>
@@ -111,19 +124,30 @@ export function InspectionDocument({
             <View style={s.tableHeader}>
               <Text style={s.colHeaderLabel}>Reinigungspunkt</Text>
               <Text style={s.colHeaderInterval}>Intervall</Text>
+              <Text style={s.colHeaderDuration}>Dauer</Text>
             </View>
             {area.items.map((item, iIdx) => (
               <View key={iIdx} style={[s.row, iIdx % 2 === 1 ? s.rowAlt : {}]}>
                 <Text style={s.colLabel}>{item.label}</Text>
                 <Text style={s.colInterval}>{INTERVAL_LABELS[item.interval] ?? item.interval}</Text>
+                <Text style={s.colDuration}>{item.durationMinutes ? fmtMin(item.durationMinutes) : "—"}</Text>
               </View>
             ))}
+            {(() => {
+              const aMin = area.items.reduce((s, i) => s + (i.durationMinutes ?? 0), 0);
+              return aMin > 0 ? (
+                <View style={s.areaTotal}>
+                  <Text style={s.areaTotalText}>Summe {area.name}</Text>
+                  <Text style={s.areaTotalVal}>{fmtMin(aMin)}</Text>
+                </View>
+              ) : null;
+            })()}
           </View>
         ))}
 
         <View style={s.footer} fixed>
           <Text style={s.footerText}>Lucid* Cleaning — {templateName}</Text>
-          <Text style={s.footerText}>{totalItems} Punkte in {areas.length} Bereichen</Text>
+          <Text style={s.footerText}>{totalItems} Punkte in {areas.length} Bereichen{totalMinutes > 0 ? ` · Gesamt ${fmtMin(totalMinutes)}` : ""}</Text>
           <Text style={s.footerText} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>
       </Page>

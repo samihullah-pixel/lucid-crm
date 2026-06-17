@@ -341,12 +341,13 @@ model InspectionArea {
 }
 
 model InspectionItem {
-  id        String         @id @default(cuid())
-  areaId    String
-  area      InspectionArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
-  label     String
-  interval  String         @default("TAEGLICH")
-  order     Int            @default(0)
+  id              String         @id @default(cuid())
+  areaId          String
+  area            InspectionArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  label           String
+  interval        String         @default("TAEGLICH")
+  durationMinutes Int?
+  order           Int            @default(0)
   @@index([areaId])
 }
 

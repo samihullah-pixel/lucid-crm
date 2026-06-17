@@ -30,7 +30,7 @@ export async function deleteInspectionTemplate(id: string) {
 
 export async function saveInspectionAreas(
   templateId: string,
-  areas: { id?: string; name: string; order: number; items: { id?: string; label: string; interval: string; order: number }[] }[]
+  areas: { id?: string; name: string; order: number; items: { id?: string; label: string; interval: string; durationMinutes: number | null; order: number }[] }[]
 ) {
   await prisma.$transaction(async (tx) => {
     const existingAreas = await tx.inspectionArea.findMany({ where: { templateId }, select: { id: true } });
@@ -55,9 +55,9 @@ export async function saveInspectionAreas(
       }
       for (const item of area.items) {
         if (item.id) {
-          await tx.inspectionItem.update({ where: { id: item.id }, data: { label: item.label, interval: item.interval, order: item.order } });
+          await tx.inspectionItem.update({ where: { id: item.id }, data: { label: item.label, interval: item.interval, durationMinutes: item.durationMinutes, order: item.order } });
         } else {
-          await tx.inspectionItem.create({ data: { areaId: areaId!, label: item.label, interval: item.interval, order: item.order } });
+          await tx.inspectionItem.create({ data: { areaId: areaId!, label: item.label, interval: item.interval, durationMinutes: item.durationMinutes, order: item.order } });
         }
       }
     }

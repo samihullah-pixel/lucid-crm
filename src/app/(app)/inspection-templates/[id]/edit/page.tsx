@@ -28,7 +28,7 @@ export default async function EditInspectionTemplatePage({ params }: { params: {
     id: a.id,
     name: a.name,
     order: a.order,
-    items: a.items.map((i) => ({ id: i.id, label: i.label, interval: i.interval, order: i.order })),
+    items: a.items.map((i) => ({ id: i.id, label: i.label, interval: i.interval, durationMinutes: i.durationMinutes, order: i.order })),
   }));
 
   const isNew = template.areas.length === 0;

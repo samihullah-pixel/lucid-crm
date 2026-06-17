@@ -14,91 +14,87 @@ const INTERVALS = [
   { value: "JAEHRLICH", label: "Jährlich" },
 ];
 
-type Item = { id?: string; label: string; interval: string; order: number };
-type Area = { id?: string; name: string; order: number; items: Item[] };
-
-function uid() {
-  return Math.random().toString(36).slice(2);
+function fmtMin(min: number) {
+  if (min < 60) return `${min} Min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m === 0 ? `${h} Std` : `${h} Std ${m} Min`;
 }
+
+type Item = { id?: string; label: string; interval: string; durationMinutes: number | null; order: number };
+type Area = { id?: string; name: string; order: number; items: Item[] };
 
 const CAFE_DEFAULTS: Area[] = [
   {
-    name: "Außenbereich",
-    order: 0,
+    name: "Außenbereich", order: 0,
     items: [
-      { label: "Eingangsbereiche fegen / kehren", interval: "TAEGLICH", order: 0 },
-      { label: "Außenmöbel abwischen", interval: "WOECHENTLICH", order: 1 },
-      { label: "Eingangsbereich Glas reinigen", interval: "WOECHENTLICH", order: 2 },
-      { label: "Aschenbecher / Abfallbehälter leeren und reinigen", interval: "TAEGLICH", order: 3 },
+      { label: "Eingangsbereiche fegen / kehren", interval: "TAEGLICH", durationMinutes: null, order: 0 },
+      { label: "Außenmöbel abwischen", interval: "WOECHENTLICH", durationMinutes: null, order: 1 },
+      { label: "Eingangsbereich Glas reinigen", interval: "WOECHENTLICH", durationMinutes: null, order: 2 },
+      { label: "Aschenbecher / Abfallbehälter leeren und reinigen", interval: "TAEGLICH", durationMinutes: null, order: 3 },
     ],
   },
   {
-    name: "Café-Fläche / Gästeraum",
-    order: 1,
+    name: "Café-Fläche / Gästeraum", order: 1,
     items: [
-      { label: "Tische und Stühle abwischen", interval: "TAEGLICH", order: 0 },
-      { label: "Boden saugen und wischen", interval: "TAEGLICH", order: 1 },
-      { label: "Fenster und Glasflächen reinigen", interval: "WOECHENTLICH", order: 2 },
-      { label: "Sockelleisten abwischen", interval: "MONATLICH", order: 3 },
-      { label: "Deckenleuchten / Lampenschirme abstauben", interval: "MONATLICH", order: 4 },
+      { label: "Tische und Stühle abwischen", interval: "TAEGLICH", durationMinutes: null, order: 0 },
+      { label: "Boden saugen und wischen", interval: "TAEGLICH", durationMinutes: null, order: 1 },
+      { label: "Fenster und Glasflächen reinigen", interval: "WOECHENTLICH", durationMinutes: null, order: 2 },
+      { label: "Sockelleisten abwischen", interval: "MONATLICH", durationMinutes: null, order: 3 },
+      { label: "Deckenleuchten / Lampenschirme abstauben", interval: "MONATLICH", durationMinutes: null, order: 4 },
     ],
   },
   {
-    name: "Bar-Tresen (hinter)",
-    order: 2,
+    name: "Bar-Tresen (hinter)", order: 2,
     items: [
-      { label: "Edelstahlgebürstete Fronten reinigen und polieren", interval: "TAEGLICH", order: 0 },
-      { label: "Kaffeemaschine und Gerätefront abwischen", interval: "TAEGLICH", order: 1 },
-      { label: "Arbeitsflächen desinfizieren", interval: "TAEGLICH", order: 2 },
-      { label: "Boden hinter Tresen fegen und wischen", interval: "TAEGLICH", order: 3 },
-      { label: "Kühlschrank-Dichtungen reinigen", interval: "WOECHENTLICH", order: 4 },
-      { label: "Edelstahlgeräte tiefenreinigen", interval: "MONATLICH", order: 5 },
+      { label: "Edelstahlgebürstete Fronten reinigen und polieren", interval: "TAEGLICH", durationMinutes: null, order: 0 },
+      { label: "Kaffeemaschine und Gerätefront abwischen", interval: "TAEGLICH", durationMinutes: null, order: 1 },
+      { label: "Arbeitsflächen desinfizieren", interval: "TAEGLICH", durationMinutes: null, order: 2 },
+      { label: "Boden hinter Tresen fegen und wischen", interval: "TAEGLICH", durationMinutes: null, order: 3 },
+      { label: "Kühlschrank-Dichtungen reinigen", interval: "WOECHENTLICH", durationMinutes: null, order: 4 },
+      { label: "Edelstahlgeräte tiefenreinigen", interval: "MONATLICH", durationMinutes: null, order: 5 },
     ],
   },
   {
-    name: "Küche (eine Ebene)",
-    order: 3,
+    name: "Küche (eine Ebene)", order: 3,
     items: [
-      { label: "Arbeitsflächen reinigen und desinfizieren", interval: "TAEGLICH", order: 0 },
-      { label: "Herd / Kochfelder entfetten", interval: "TAEGLICH", order: 1 },
-      { label: "Frittierfett kontrollieren / Bereich reinigen", interval: "WOECHENTLICH", order: 2 },
-      { label: "Spülbereich reinigen und desinfizieren", interval: "TAEGLICH", order: 3 },
-      { label: "Boden fegen und wischen", interval: "TAEGLICH", order: 4 },
-      { label: "Dunstabzug / Filter reinigen", interval: "MONATLICH", order: 5 },
-      { label: "Kühlschrank / Kühlzelle reinigen", interval: "WOECHENTLICH", order: 6 },
-      { label: "Backofen reinigen", interval: "WOECHENTLICH", order: 7 },
-      { label: "Edelstahlfronten polieren", interval: "TAEGLICH", order: 8 },
+      { label: "Arbeitsflächen reinigen und desinfizieren", interval: "TAEGLICH", durationMinutes: null, order: 0 },
+      { label: "Herd / Kochfelder entfetten", interval: "TAEGLICH", durationMinutes: null, order: 1 },
+      { label: "Frittierfett kontrollieren / Bereich reinigen", interval: "WOECHENTLICH", durationMinutes: null, order: 2 },
+      { label: "Spülbereich reinigen und desinfizieren", interval: "TAEGLICH", durationMinutes: null, order: 3 },
+      { label: "Boden fegen und wischen", interval: "TAEGLICH", durationMinutes: null, order: 4 },
+      { label: "Dunstabzug / Filter reinigen", interval: "MONATLICH", durationMinutes: null, order: 5 },
+      { label: "Kühlschrank / Kühlzelle reinigen", interval: "WOECHENTLICH", durationMinutes: null, order: 6 },
+      { label: "Backofen reinigen", interval: "WOECHENTLICH", durationMinutes: null, order: 7 },
+      { label: "Edelstahlfronten polieren", interval: "TAEGLICH", durationMinutes: null, order: 8 },
     ],
   },
   {
-    name: "Gäste-WC",
-    order: 4,
+    name: "Gäste-WC", order: 4,
     items: [
-      { label: "Toiletten desinfizieren", interval: "TAEGLICH", order: 0 },
-      { label: "Waschbecken und Armaturen reinigen", interval: "TAEGLICH", order: 1 },
-      { label: "Boden wischen und desinfizieren", interval: "TAEGLICH", order: 2 },
-      { label: "Verbrauchsmaterial auffüllen (Seife, Papier)", interval: "TAEGLICH", order: 3 },
-      { label: "Spiegel reinigen", interval: "TAEGLICH", order: 4 },
-      { label: "Abfallbehälter leeren", interval: "TAEGLICH", order: 5 },
+      { label: "Toiletten desinfizieren", interval: "TAEGLICH", durationMinutes: null, order: 0 },
+      { label: "Waschbecken und Armaturen reinigen", interval: "TAEGLICH", durationMinutes: null, order: 1 },
+      { label: "Boden wischen und desinfizieren", interval: "TAEGLICH", durationMinutes: null, order: 2 },
+      { label: "Verbrauchsmaterial auffüllen (Seife, Papier)", interval: "TAEGLICH", durationMinutes: null, order: 3 },
+      { label: "Spiegel reinigen", interval: "TAEGLICH", durationMinutes: null, order: 4 },
+      { label: "Abfallbehälter leeren", interval: "TAEGLICH", durationMinutes: null, order: 5 },
     ],
   },
   {
-    name: "Personal-WC",
-    order: 5,
+    name: "Personal-WC", order: 5,
     items: [
-      { label: "Toilette desinfizieren", interval: "TAEGLICH", order: 0 },
-      { label: "Waschbecken und Armaturen reinigen", interval: "TAEGLICH", order: 1 },
-      { label: "Boden wischen", interval: "TAEGLICH", order: 2 },
-      { label: "Verbrauchsmaterial auffüllen", interval: "TAEGLICH", order: 3 },
+      { label: "Toilette desinfizieren", interval: "TAEGLICH", durationMinutes: null, order: 0 },
+      { label: "Waschbecken und Armaturen reinigen", interval: "TAEGLICH", durationMinutes: null, order: 1 },
+      { label: "Boden wischen", interval: "TAEGLICH", durationMinutes: null, order: 2 },
+      { label: "Verbrauchsmaterial auffüllen", interval: "TAEGLICH", durationMinutes: null, order: 3 },
     ],
   },
   {
-    name: "Lagerräume",
-    order: 6,
+    name: "Lagerräume", order: 6,
     items: [
-      { label: "Boden fegen und wischen", interval: "WOECHENTLICH", order: 0 },
-      { label: "Regale abstauben", interval: "MONATLICH", order: 1 },
-      { label: "Ordnung kontrollieren / Abfälle entsorgen", interval: "WOECHENTLICH", order: 2 },
+      { label: "Boden fegen und wischen", interval: "WOECHENTLICH", durationMinutes: null, order: 0 },
+      { label: "Regale abstauben", interval: "MONATLICH", durationMinutes: null, order: 1 },
+      { label: "Ordnung kontrollieren / Abfälle entsorgen", interval: "WOECHENTLICH", durationMinutes: null, order: 2 },
     ],
   },
 ];
@@ -120,6 +116,8 @@ export function InspectionTemplateEditor({
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  const totalMinutes = areas.flatMap((a) => a.items).reduce((sum, i) => sum + (i.durationMinutes ?? 0), 0);
+
   function addArea() {
     setAreas((prev) => [...prev, { name: "", order: prev.length, items: [] }]);
     setSaved(false);
@@ -139,7 +137,7 @@ export function InspectionTemplateEditor({
     setAreas((prev) =>
       prev.map((a, i) =>
         i === areaIdx
-          ? { ...a, items: [...a.items, { label: "", interval: "TAEGLICH", order: a.items.length }] }
+          ? { ...a, items: [...a.items, { label: "", interval: "TAEGLICH", durationMinutes: null, order: a.items.length }] }
           : a
       )
     );
@@ -155,14 +153,16 @@ export function InspectionTemplateEditor({
     setSaved(false);
   }
 
-  function updateItem(areaIdx: number, itemIdx: number, field: "label" | "interval", value: string) {
+  function updateItem(areaIdx: number, itemIdx: number, field: "label" | "interval" | "durationMinutes", value: string) {
     setAreas((prev) =>
       prev.map((a, i) =>
         i === areaIdx
           ? {
               ...a,
               items: a.items.map((item, j) =>
-                j === itemIdx ? { ...item, [field]: value } : item
+                j === itemIdx
+                  ? { ...item, [field]: field === "durationMinutes" ? (value === "" ? null : Number(value)) : value }
+                  : item
               ),
             }
           : a
@@ -183,6 +183,7 @@ export function InspectionTemplateEditor({
             id: item.id,
             label: item.label,
             interval: item.interval,
+            durationMinutes: item.durationMinutes,
             order: j,
           })),
         }))
@@ -193,67 +194,111 @@ export function InspectionTemplateEditor({
 
   return (
     <div className="space-y-4">
-      {areas.map((area, areaIdx) => (
-        <div key={areaIdx} className="border border-gold/20 bg-white">
-          <div className="flex items-center gap-3 border-b border-gold/10 bg-light/40 px-4 py-3">
-            <input
-              value={area.name}
-              onChange={(e) => updateAreaName(areaIdx, e.target.value)}
-              placeholder="Bereichsname"
-              className="flex-1 rounded border border-black/10 px-3 py-1.5 font-sans text-sm font-medium focus:border-gold focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => removeArea(areaIdx)}
-              className="font-sans text-[11px] uppercase tracking-wide text-grey hover:text-red-500"
-            >
-              Entfernen
-            </button>
+      {/* Gesamtzeit-Zusammenfassung */}
+      {totalMinutes > 0 && (
+        <div className="flex flex-wrap gap-6 rounded border border-gold/20 bg-gold/5 px-5 py-3">
+          <div>
+            <p className="font-sans text-[10px] uppercase tracking-wide text-grey">Gesamtzeit</p>
+            <p className="font-serif text-xl font-light text-black">{fmtMin(totalMinutes)}</p>
           </div>
-
-          <div className="p-4">
-            {area.items.length === 0 && (
-              <p className="mb-2 font-sans text-xs text-grey">Noch keine Punkte. Unten hinzufügen.</p>
-            )}
-            <div className="space-y-2">
-              {area.items.map((item, itemIdx) => (
-                <div key={itemIdx} className="flex items-center gap-2">
-                  <input
-                    value={item.label}
-                    onChange={(e) => updateItem(areaIdx, itemIdx, "label", e.target.value)}
-                    placeholder="Reinigungspunkt"
-                    className="min-w-0 flex-1 rounded border border-black/10 px-2 py-1.5 font-sans text-sm focus:border-gold focus:outline-none"
-                  />
-                  <select
-                    value={item.interval}
-                    onChange={(e) => updateItem(areaIdx, itemIdx, "interval", e.target.value)}
-                    className="w-40 rounded border border-black/10 px-2 py-1.5 font-sans text-xs focus:border-gold focus:outline-none"
-                  >
-                    {INTERVALS.map((iv) => (
-                      <option key={iv.value} value={iv.value}>{iv.label}</option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => removeItem(areaIdx, itemIdx)}
-                    className="font-sans text-lg leading-none text-grey hover:text-red-500"
-                    title="Punkt entfernen"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => addItem(areaIdx)}
-              className="mt-3 font-sans text-[11px] uppercase tracking-wide text-grey hover:text-gold"
-            >
-              + Punkt hinzufügen
-            </button>
-          </div>
+          {areas.map((a, i) => {
+            const aMin = a.items.reduce((s, it) => s + (it.durationMinutes ?? 0), 0);
+            if (aMin === 0) return null;
+            return (
+              <div key={i}>
+                <p className="font-sans text-[10px] uppercase tracking-wide text-grey">{a.name || `Bereich ${i + 1}`}</p>
+                <p className="font-sans text-sm font-medium text-black">{fmtMin(aMin)}</p>
+              </div>
+            );
+          })}
         </div>
-      ))}
+      )}
+
+      {areas.map((area, areaIdx) => {
+        const areaMinutes = area.items.reduce((s, it) => s + (it.durationMinutes ?? 0), 0);
+        return (
+          <div key={areaIdx} className="border border-gold/20 bg-white">
+            <div className="flex items-center gap-3 border-b border-gold/10 bg-light/40 px-4 py-3">
+              <input
+                value={area.name}
+                onChange={(e) => updateAreaName(areaIdx, e.target.value)}
+                placeholder="Bereichsname"
+                className="flex-1 rounded border border-black/10 px-3 py-1.5 font-sans text-sm font-medium focus:border-gold focus:outline-none"
+              />
+              {areaMinutes > 0 && (
+                <span className="font-sans text-xs text-gold-dark">{fmtMin(areaMinutes)}</span>
+              )}
+              <button
+                type="button"
+                onClick={() => removeArea(areaIdx)}
+                className="font-sans text-[11px] uppercase tracking-wide text-grey hover:text-red-500"
+              >
+                Entfernen
+              </button>
+            </div>
+
+            <div className="p-4">
+              {area.items.length === 0 && (
+                <p className="mb-2 font-sans text-xs text-grey">Noch keine Punkte. Unten hinzufügen.</p>
+              )}
+              {/* Header */}
+              {area.items.length > 0 && (
+                <div className="mb-1 flex items-center gap-2 px-0.5">
+                  <span className="min-w-0 flex-1 font-sans text-[10px] uppercase tracking-wide text-grey">Aufgabe</span>
+                  <span className="w-36 font-sans text-[10px] uppercase tracking-wide text-grey">Intervall</span>
+                  <span className="w-24 font-sans text-[10px] uppercase tracking-wide text-grey">Dauer (Min)</span>
+                  <span className="w-4" />
+                </div>
+              )}
+              <div className="space-y-2">
+                {area.items.map((item, itemIdx) => (
+                  <div key={itemIdx} className="flex items-center gap-2">
+                    <input
+                      value={item.label}
+                      onChange={(e) => updateItem(areaIdx, itemIdx, "label", e.target.value)}
+                      placeholder="Reinigungspunkt"
+                      className="min-w-0 flex-1 rounded border border-black/10 px-2 py-1.5 font-sans text-sm focus:border-gold focus:outline-none"
+                    />
+                    <select
+                      value={item.interval}
+                      onChange={(e) => updateItem(areaIdx, itemIdx, "interval", e.target.value)}
+                      className="w-36 rounded border border-black/10 px-2 py-1.5 font-sans text-xs focus:border-gold focus:outline-none"
+                    >
+                      {INTERVALS.map((iv) => (
+                        <option key={iv.value} value={iv.value}>{iv.label}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      min="1"
+                      max="999"
+                      placeholder="—"
+                      value={item.durationMinutes ?? ""}
+                      onChange={(e) => updateItem(areaIdx, itemIdx, "durationMinutes", e.target.value)}
+                      className="w-24 rounded border border-black/10 px-2 py-1.5 font-sans text-sm focus:border-gold focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeItem(areaIdx, itemIdx)}
+                      className="w-4 font-sans text-lg leading-none text-grey hover:text-red-500"
+                      title="Punkt entfernen"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => addItem(areaIdx)}
+                className="mt-3 font-sans text-[11px] uppercase tracking-wide text-grey hover:text-gold"
+              >
+                + Punkt hinzufügen
+              </button>
+            </div>
+          </div>
+        );
+      })}
 
       <div className="flex flex-wrap items-center gap-4 pt-2">
         <button
