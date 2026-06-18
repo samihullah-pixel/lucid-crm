@@ -268,61 +268,103 @@ export function InspectionTemplateEditor({
               </button>
             </div>
 
-            <div className="p-4">
+            <div className="p-3 sm:p-4">
               {area.items.length === 0 && (
                 <p className="mb-2 font-sans text-xs text-grey">Noch keine Punkte. Unten hinzufügen.</p>
               )}
-              {/* Header */}
+              {/* Header — nur Desktop */}
               {area.items.length > 0 && (
-                <div className="mb-1 flex items-center gap-2 px-0.5">
+                <div className="mb-1 hidden items-center gap-2 px-0.5 md:flex">
                   <span className="min-w-0 flex-1 font-sans text-[10px] uppercase tracking-wide text-grey">Aufgabe</span>
                   <span className="w-36 font-sans text-[10px] uppercase tracking-wide text-grey">Intervall</span>
                   <span className="w-24 font-sans text-[10px] uppercase tracking-wide text-grey">Dauer (Min)</span>
                   <span className="w-4" />
                 </div>
               )}
-              <div className="space-y-2">
+              <div className="space-y-3 md:space-y-2">
                 {area.items.map((item, itemIdx) => (
-                  <div key={itemIdx} className="flex items-center gap-2">
-                    <input
-                      value={item.label}
-                      onChange={(e) => updateItem(areaIdx, itemIdx, "label", e.target.value)}
-                      placeholder="Reinigungspunkt"
-                      className="min-w-0 flex-1 rounded border border-black/10 px-2 py-1.5 font-sans text-sm focus:border-gold focus:outline-none"
-                    />
-                    <select
-                      value={item.interval}
-                      onChange={(e) => updateItem(areaIdx, itemIdx, "interval", e.target.value)}
-                      className="w-36 rounded border border-black/10 px-2 py-1.5 font-sans text-xs focus:border-gold focus:outline-none"
-                    >
-                      {INTERVALS.map((iv) => (
-                        <option key={iv.value} value={iv.value}>{iv.label}</option>
-                      ))}
-                    </select>
-                    <input
-                      type="number"
-                      min="1"
-                      max="999"
-                      placeholder="—"
-                      value={item.durationMinutes ?? ""}
-                      onChange={(e) => updateItem(areaIdx, itemIdx, "durationMinutes", e.target.value)}
-                      className="w-24 rounded border border-black/10 px-2 py-1.5 font-sans text-sm focus:border-gold focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeItem(areaIdx, itemIdx)}
-                      className="w-4 font-sans text-lg leading-none text-grey hover:text-red-500"
-                      title="Punkt entfernen"
-                    >
-                      ×
-                    </button>
+                  <div key={itemIdx} className="rounded-lg border border-black/5 p-2.5 md:rounded-none md:border-0 md:p-0">
+                    {/* Desktop: eine Zeile */}
+                    <div className="hidden items-center gap-2 md:flex">
+                      <input
+                        value={item.label}
+                        onChange={(e) => updateItem(areaIdx, itemIdx, "label", e.target.value)}
+                        placeholder="Reinigungspunkt"
+                        className="min-w-0 flex-1 rounded border border-black/10 px-2 py-1.5 font-sans text-sm focus:border-gold focus:outline-none"
+                      />
+                      <select
+                        value={item.interval}
+                        onChange={(e) => updateItem(areaIdx, itemIdx, "interval", e.target.value)}
+                        className="w-36 rounded border border-black/10 px-2 py-1.5 font-sans text-xs focus:border-gold focus:outline-none"
+                      >
+                        {INTERVALS.map((iv) => (
+                          <option key={iv.value} value={iv.value}>{iv.label}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        min="1"
+                        max="999"
+                        placeholder="—"
+                        value={item.durationMinutes ?? ""}
+                        onChange={(e) => updateItem(areaIdx, itemIdx, "durationMinutes", e.target.value)}
+                        className="w-24 rounded border border-black/10 px-2 py-1.5 font-sans text-sm focus:border-gold focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeItem(areaIdx, itemIdx)}
+                        className="w-4 font-sans text-lg leading-none text-grey hover:text-red-500"
+                        title="Punkt entfernen"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    {/* Mobil: gestapelt */}
+                    <div className="space-y-2 md:hidden">
+                      <div className="flex items-start gap-2">
+                        <input
+                          value={item.label}
+                          onChange={(e) => updateItem(areaIdx, itemIdx, "label", e.target.value)}
+                          placeholder="Reinigungspunkt"
+                          className="min-w-0 flex-1 rounded border border-black/10 px-3 py-2 font-sans text-[15px] focus:border-gold focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeItem(areaIdx, itemIdx)}
+                          className="mt-1.5 px-1 font-sans text-xl leading-none text-grey hover:text-red-500"
+                          title="Punkt entfernen"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="flex gap-2">
+                        <select
+                          value={item.interval}
+                          onChange={(e) => updateItem(areaIdx, itemIdx, "interval", e.target.value)}
+                          className="flex-1 rounded border border-black/10 px-2 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+                        >
+                          {INTERVALS.map((iv) => (
+                            <option key={iv.value} value={iv.value}>{iv.label}</option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          min="1"
+                          max="999"
+                          placeholder="Min"
+                          value={item.durationMinutes ?? ""}
+                          onChange={(e) => updateItem(areaIdx, itemIdx, "durationMinutes", e.target.value)}
+                          className="w-20 rounded border border-black/10 px-2 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
               <button
                 type="button"
                 onClick={() => addItem(areaIdx)}
-                className="mt-3 font-sans text-[11px] uppercase tracking-wide text-grey hover:text-gold"
+                className="mt-3 font-sans text-xs text-grey hover:text-gold sm:text-[11px] sm:uppercase sm:tracking-wide"
               >
                 + Punkt hinzufügen
               </button>
