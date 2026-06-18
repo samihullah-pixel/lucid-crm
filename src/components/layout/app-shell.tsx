@@ -5,7 +5,8 @@ import { logout } from "@/actions/auth";
 const navigation = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dienstplan", label: "Dienstplan" },
-  { href: "/protokolle", label: "Protokolle" },
+  { href: "/arbeitsprotokoll", label: "Arbeitsprotokoll" },
+  { href: "/protokolle", label: "Kontrolle" },
   { href: "/sites", label: "Standorte" },
   { href: "/customers", label: "Kunden" },
   { href: "/properties", label: "Objekte" },

@@ -82,6 +82,7 @@ model Employee {
   cleaningJobs     CleaningJob[]
   shiftAssignments    ShiftAssignment[]
   inspectionProtocols InspectionProtocol[]
+  workLogEntries      WorkLogEntry[]
 }
 
 model Site {
@@ -98,6 +99,7 @@ model Site {
   shifts              Shift[]
   inspectionTemplates InspectionTemplate[]
   inspectionProtocols InspectionProtocol[]
+  workLogs            WorkLog[]
 }
 
 model Shift {
@@ -390,6 +392,7 @@ model InspectionTemplate {
   site        Site?                @relation(fields: [siteId], references: [id], onDelete: SetNull)
   areas       InspectionArea[]
   protocols   InspectionProtocol[]
+  workLogs    WorkLog[]
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
   @@index([propertyId])
@@ -550,4 +553,42 @@ model InvoiceItem {
   updatedAt     DateTime        @updatedAt
   invoice       Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   @@index([invoiceId])
+}
+
+enum WorkLogStatus {
+  OFFEN
+  ABGESCHLOSSEN
+}
+
+model WorkLog {
+  id         String             @id @default(cuid())
+  templateId String
+  template   InspectionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  siteId     String
+  site       Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  date       DateTime           @db.Date
+  status     WorkLogStatus      @default(OFFEN)
+  completedAt DateTime?
+  notes      String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  entries    WorkLogEntry[]
+  @@unique([templateId, date])
+  @@index([siteId])
+  @@index([date])
+}
+
+model WorkLogEntry {
+  id         String    @id @default(cuid())
+  workLogId  String
+  workLog    WorkLog   @relation(fields: [workLogId], references: [id], onDelete: Cascade)
+  areaName   String
+  itemLabel  String
+  checked    Boolean   @default(false)
+  checkedAt  DateTime?
+  employeeId String?
+  employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  sortOrder  Int       @default(0)
+  @@index([workLogId])
+  @@index([employeeId])
 }
