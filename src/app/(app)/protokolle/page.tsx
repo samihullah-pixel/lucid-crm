@@ -132,72 +132,57 @@ export default async function ProtokollePage() {
             sunday.setDate(sunday.getDate() + 6);
 
             return (
-              <div key={p.id} className="border border-gold/20 bg-white">
-                <div className="flex items-center justify-between px-6 py-4">
-                  <div className="flex items-center gap-4">
-                    {p.site?.color && (
-                      <span
-                        className="inline-block h-3 w-3 rounded-full"
-                        style={{ backgroundColor: p.site.color }}
-                      />
-                    )}
-                    <div>
-                      <Link
-                        href={`/protokolle/${p.id}`}
-                        className="font-serif text-lg font-light text-black hover:text-gold-dark"
-                      >
-                        {p.template.name}
-                      </Link>
-                      <p className="font-sans text-xs text-grey">
-                        KW {getKW(p.weekStart)} — {formatDate(p.weekStart)} – {formatDate(sunday)}
-                        {p.site && ` · ${p.site.name}`}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-24 overflow-hidden rounded-full bg-black/5">
-                          <div
-                            className="h-full rounded-full bg-gold transition-all"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <span className="font-sans text-xs text-grey">
-                          {checked}/{total}
-                        </span>
-                      </div>
-                      {p.employee && (
-                        <p className="mt-0.5 font-sans text-[10px] text-grey">
-                          {p.employee.firstName} {p.employee.lastName}
-                        </p>
+              <Link
+                key={p.id}
+                href={`/protokolle/${p.id}`}
+                className="block border border-gold/20 bg-white transition-colors hover:border-gold/40"
+              >
+                <div className="px-4 py-4 sm:px-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0">
+                      {p.site?.color && (
+                        <span
+                          className="mt-1 inline-block h-3 w-3 flex-shrink-0 rounded-full"
+                          style={{ backgroundColor: p.site.color }}
+                        />
                       )}
+                      <div className="min-w-0">
+                        <p className="font-serif text-base font-light text-black sm:text-lg">
+                          {p.template.name}
+                        </p>
+                        <p className="font-sans text-xs text-grey">
+                          KW {getKW(p.weekStart)} — {formatDate(p.weekStart)} – {formatDate(sunday)}
+                          {p.site && ` · ${p.site.name}`}
+                        </p>
+                      </div>
                     </div>
 
                     <span
-                      className={`rounded border px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide ${status.bg} ${status.text}`}
+                      className={`flex-shrink-0 rounded border px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide ${status.bg} ${status.text}`}
                     >
                       {status.label}
                     </span>
-
-                    <div className="flex gap-2">
-                      <Link
-                        href={`/protokolle/${p.id}`}
-                        className="font-sans text-[11px] uppercase tracking-wide text-grey hover:text-gold"
-                      >
-                        Oeffnen
-                      </Link>
-                      {p.status !== "ABGESCHLOSSEN" && (
-                        <DeleteButton
-                          action={deleteProtocol.bind(null, p.id)}
-                          confirm={`Protokoll KW ${getKW(p.weekStart)} wirklich loeschen?`}
-                        />
-                      )}
-                    </div>
                   </div>
+
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/5">
+                      <div
+                        className={`h-full rounded-full transition-all ${pct === 100 ? "bg-emerald-500" : "bg-gold"}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="flex-shrink-0 font-sans text-xs text-grey">
+                      {checked}/{total}
+                    </span>
+                  </div>
+
+                  {p.employee && (
+                    <p className="mt-1 font-sans text-[11px] text-grey">
+                      {p.employee.firstName} {p.employee.lastName}
+                    </p>
+                  )}
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

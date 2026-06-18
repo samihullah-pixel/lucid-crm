@@ -200,68 +200,122 @@ export default async function DienstplanPage({
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  {site.shifts.map((shift) => (
-                    <div key={shift.id}>
-                      <div className="grid min-w-[800px] grid-cols-[180px_repeat(7,1fr)]">
-                        <div className="flex flex-col justify-center border-b border-r border-gold/10 bg-light px-3 py-2">
-                          <span className="font-sans text-xs font-medium text-black">
-                            {shift.name}
-                          </span>
-                          <span className="font-sans text-[10px] text-grey">
-                            {shift.startTime} – {shift.endTime}
-                          </span>
-                          <span className="font-sans text-[10px] text-grey">
-                            Soll: {shift.requiredStaff}
-                          </span>
+                <>
+                  {/* Desktop: Tabelle */}
+                  <div className="hidden overflow-x-auto md:block">
+                    {site.shifts.map((shift) => (
+                      <div key={shift.id}>
+                        <div className="grid grid-cols-[180px_repeat(7,1fr)]">
+                          <div className="flex flex-col justify-center border-b border-r border-gold/10 bg-light px-3 py-2">
+                            <span className="font-sans text-xs font-medium text-black">
+                              {shift.name}
+                            </span>
+                            <span className="font-sans text-[10px] text-grey">
+                              {shift.startTime} – {shift.endTime}
+                            </span>
+                            <span className="font-sans text-[10px] text-grey">
+                              Soll: {shift.requiredStaff}
+                            </span>
+                          </div>
+                          {weekDays.map((day, dayIdx) => {
+                            const isoWeekday = day.getDay() === 0 ? 7 : day.getDay();
+                            const isScheduled = shift.weekdays.includes(isoWeekday);
+                            const dayAssignments = shift.assignments.filter(
+                              (a) => a.date.toDateString() === day.toDateString()
+                            );
+                            const isToday = day.toDateString() === today.toDateString();
+
+                            return (
+                              <div
+                                key={dayIdx}
+                                className={`border-b border-r border-gold/10 ${isToday ? "ring-2 ring-inset ring-gold/40" : ""}`}
+                              >
+                                <RosterCell
+                                  shiftId={shift.id}
+                                  date={toDateParam(day)}
+                                  assignments={dayAssignments}
+                                  requiredStaff={shift.requiredStaff}
+                                  availableEmployees={employees}
+                                  isScheduledDay={isScheduled}
+                                />
+                              </div>
+                            );
+                          })}
                         </div>
-                        {weekDays.map((day, dayIdx) => {
-                          const isoWeekday = day.getDay() === 0 ? 7 : day.getDay();
-                          const isScheduled = shift.weekdays.includes(isoWeekday);
-                          const dayAssignments = shift.assignments.filter(
-                            (a) => a.date.toDateString() === day.toDateString()
-                          );
-                          const isToday = day.toDateString() === today.toDateString();
-
-                          return (
-                            <div
-                              key={dayIdx}
-                              className={`border-b border-r border-gold/10 ${isToday ? "ring-2 ring-inset ring-gold/40" : ""}`}
-                            >
-                              <RosterCell
-                                shiftId={shift.id}
-                                date={toDateParam(day)}
-                                assignments={dayAssignments}
-                                requiredStaff={shift.requiredStaff}
-                                availableEmployees={employees}
-                                isScheduledDay={isScheduled}
-                              />
-                            </div>
-                          );
-                        })}
                       </div>
-                    </div>
-                  ))}
+                    ))}
 
-                  <div className="grid min-w-[800px] grid-cols-[180px_repeat(7,1fr)]">
-                    <div className="bg-light px-3 py-1" />
+                    <div className="grid grid-cols-[180px_repeat(7,1fr)]">
+                      <div className="bg-light px-3 py-1" />
+                      {weekDays.map((day, dayIdx) => {
+                        const isToday = day.toDateString() === today.toDateString();
+                        return (
+                          <div
+                            key={dayIdx}
+                            className={`px-1 py-1 text-center ${isToday ? "bg-gold/5" : ""}`}
+                          >
+                            <span
+                              className={`font-sans text-[10px] uppercase tracking-wide ${isToday ? "font-medium text-gold-dark" : "text-grey"}`}
+                            >
+                              {WEEKDAY_LABELS[dayIdx]} {formatDateShort(day)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Mobil: Tages-Karten */}
+                  <div className="space-y-2 p-3 md:hidden">
                     {weekDays.map((day, dayIdx) => {
+                      const isoWeekday = day.getDay() === 0 ? 7 : day.getDay();
                       const isToday = day.toDateString() === today.toDateString();
+                      const hasAnyShift = site.shifts.some((s) => s.weekdays.includes(isoWeekday));
+                      if (!hasAnyShift) return null;
+
                       return (
                         <div
                           key={dayIdx}
-                          className={`px-1 py-1 text-center ${isToday ? "bg-gold/5" : ""}`}
+                          className={`rounded-lg border p-3 ${isToday ? "border-gold bg-gold/5" : "border-gold/10 bg-light/30"}`}
                         >
-                          <span
-                            className={`font-sans text-[10px] uppercase tracking-wide ${isToday ? "font-medium text-gold-dark" : "text-grey"}`}
-                          >
+                          <p className={`mb-2 font-sans text-xs font-medium uppercase tracking-wide ${isToday ? "text-gold-dark" : "text-grey"}`}>
                             {WEEKDAY_LABELS[dayIdx]} {formatDateShort(day)}
-                          </span>
+                            {isToday && " — Heute"}
+                          </p>
+                          {site.shifts.map((shift) => {
+                            if (!shift.weekdays.includes(isoWeekday)) return null;
+                            const dayAssignments = shift.assignments.filter(
+                              (a) => a.date.toDateString() === day.toDateString()
+                            );
+                            const count = dayAssignments.length;
+                            const isFull = count >= shift.requiredStaff;
+
+                            return (
+                              <div key={shift.id} className="mb-2 last:mb-0">
+                                <div className="mb-1 flex items-center justify-between">
+                                  <span className="font-sans text-sm font-medium text-black">
+                                    {shift.name}
+                                  </span>
+                                  <span className={`font-sans text-xs font-medium ${isFull ? "text-emerald-600" : count > 0 ? "text-amber-600" : "text-red-600"}`}>
+                                    {count}/{shift.requiredStaff}
+                                  </span>
+                                </div>
+                                <RosterCell
+                                  shiftId={shift.id}
+                                  date={toDateParam(day)}
+                                  assignments={dayAssignments}
+                                  requiredStaff={shift.requiredStaff}
+                                  availableEmployees={employees}
+                                  isScheduledDay={true}
+                                />
+                              </div>
+                            );
+                          })}
                         </div>
                       );
                     })}
                   </div>
-                </div>
+                </>
               )}
             </div>
           ))}

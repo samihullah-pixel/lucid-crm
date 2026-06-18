@@ -50,27 +50,27 @@ export default async function ProtocolPage({ params }: { params: { id: string } 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <Link
-            href="/protokolle"
-            className="mb-2 inline-block font-sans text-[11px] uppercase tracking-wide text-grey hover:text-gold"
-          >
-            ← Protokolle
-          </Link>
-          <h1 className="font-serif text-3xl font-light text-black">
-            {protocol.template.name}
-          </h1>
-          <p className="font-sans text-sm font-light text-grey">
-            KW {getKW(protocol.weekStart)} — {formatDate(protocol.weekStart)} –{" "}
-            {formatDate(sunday)}
-            {protocol.site && ` · ${protocol.site.name}`}
-          </p>
-        </div>
+      <div>
+        <Link
+          href="/protokolle"
+          className="mb-2 inline-block font-sans text-[11px] uppercase tracking-wide text-grey hover:text-gold"
+        >
+          ← Protokolle
+        </Link>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="font-serif text-2xl font-light text-black sm:text-3xl">
+              {protocol.template.name}
+            </h1>
+            <p className="font-sans text-sm font-light text-grey">
+              KW {getKW(protocol.weekStart)} — {formatDate(protocol.weekStart)} –{" "}
+              {formatDate(sunday)}
+              {protocol.site && ` · ${protocol.site.name}`}
+            </p>
+          </div>
 
-        <div className="text-right">
           <span
-            className={`inline-block rounded border px-3 py-1 font-sans text-[11px] uppercase tracking-wide ${
+            className={`inline-block self-start rounded border px-3 py-1 font-sans text-[11px] uppercase tracking-wide ${
               isComplete
                 ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                 : checked > 0
@@ -117,19 +117,30 @@ export default async function ProtocolPage({ params }: { params: { id: string } 
         {Array.from(areas.entries()).map(([areaName, checks]) => {
           const areaChecked = checks.filter((c) => c.checked).length;
           const areaTotal = checks.length;
+          const areaPct = areaTotal > 0 ? Math.round((areaChecked / areaTotal) * 100) : 0;
           return (
-            <div key={areaName} className="border border-gold/20 bg-white">
-              <div className="flex items-center justify-between border-b border-gold/10 bg-light/40 px-4 py-3">
-                <h2 className="font-sans text-sm font-medium text-black">{areaName}</h2>
-                <span
-                  className={`font-sans text-xs ${
-                    areaChecked === areaTotal ? "text-emerald-600" : "text-grey"
-                  }`}
-                >
-                  {areaChecked}/{areaTotal}
-                </span>
+            <div key={areaName} className="overflow-hidden rounded-lg border border-gold/20 bg-white">
+              <div className="border-b border-gold/10 bg-light/40 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-sans text-base font-medium text-black sm:text-sm">{areaName}</h2>
+                  <span
+                    className={`font-sans text-xs font-medium ${
+                      areaChecked === areaTotal ? "text-emerald-600" : "text-grey"
+                    }`}
+                  >
+                    {areaChecked}/{areaTotal}
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-black/5">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      areaPct === 100 ? "bg-emerald-500" : areaPct > 0 ? "bg-gold" : ""
+                    }`}
+                    style={{ width: `${areaPct}%` }}
+                  />
+                </div>
               </div>
-              <div className="divide-y divide-black/5 px-2 py-1">
+              <div className="divide-y divide-black/5">
                 {checks.map((check) => (
                   <CheckItem key={check.id} check={check} disabled={isComplete} />
                 ))}
