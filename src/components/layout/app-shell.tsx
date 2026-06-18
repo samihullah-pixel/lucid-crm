@@ -4,6 +4,9 @@ import { logout } from "@/actions/auth";
 
 const navigation = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/dienstplan", label: "Dienstplan" },
+  { href: "/protokolle", label: "Protokolle" },
+  { href: "/sites", label: "Standorte" },
   { href: "/customers", label: "Kunden" },
   { href: "/properties", label: "Objekte" },
   { href: "/employees", label: "Mitarbeiter" },
@@ -13,6 +16,8 @@ const navigation = [
   { href: "/invoices", label: "Rechnungen" },
   { href: "/inspection-templates", label: "Aufnahmebögen" },
   { href: "/hours", label: "Stunden" },
+  { href: "/suppliers", label: "Lieferanten" },
+  { href: "/supply-orders", label: "Bestellungen" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

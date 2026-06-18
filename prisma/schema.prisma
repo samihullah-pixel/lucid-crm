@@ -69,17 +69,70 @@ enum InvoiceItemType {
   SONSTIGES
 }
 model Employee {
-  id            String        @id @default(cuid())
-  firstName     String
-  lastName      String
-  email         String?
-  phone         String?
-  color         String?
-  isActive      Boolean       @default(true)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  appointments  Appointment[]
-  cleaningJobs  CleaningJob[]
+  id               String            @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String?
+  phone            String?
+  color            String?
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  appointments     Appointment[]
+  cleaningJobs     CleaningJob[]
+  shiftAssignments    ShiftAssignment[]
+  inspectionProtocols InspectionProtocol[]
+}
+
+model Site {
+  id        String   @id @default(cuid())
+  name      String
+  shortName String
+  color     String?
+  address   String?
+  notes     String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  shifts              Shift[]
+  inspectionTemplates InspectionTemplate[]
+  inspectionProtocols InspectionProtocol[]
+}
+
+model Shift {
+  id            String            @id @default(cuid())
+  siteId        String
+  name          String
+  startTime     String
+  endTime       String
+  requiredStaff Int               @default(1)
+  weekdays      Int[]             @default([1, 2, 3, 4, 5])
+  validFrom     DateTime
+  validUntil    DateTime?
+  sortOrder     Int               @default(0)
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  site          Site              @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  assignments   ShiftAssignment[]
+  @@index([siteId])
+}
+
+model ShiftAssignment {
+  id         String   @id @default(cuid())
+  shiftId    String
+  employeeId String
+  date       DateTime
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  shift      Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  @@unique([shiftId, employeeId, date])
+  @@index([shiftId])
+  @@index([employeeId])
+  @@index([date])
 }
 model Customer {
   id                String              @id @default(cuid())
@@ -102,7 +155,9 @@ model Customer {
   cleaningJobs      CleaningJob[]
   extraWorks        ExtraWork[]
   invoices          Invoice[]
-  materialPlans     MaterialAgreement[]
+  materialPlans       MaterialAgreement[]
+  supplyItems         CustomerSupplyItem[]
+  supplyOrderItems    SupplyOrderItem[]
 }
 model Property {
   id                   String               @id @default(cuid())
@@ -315,19 +370,66 @@ model Invoice {
   property           Property?      @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   extraWorks         ExtraWork[]
   items              InvoiceItem[]
+  supplyOrderItems   SupplyOrderItem[]
   @@index([customerId])
   @@index([propertyId])
   @@index([invoiceDate])
 }
+enum InspectionStatus {
+  OFFEN
+  IN_BEARBEITUNG
+  ABGESCHLOSSEN
+}
+
 model InspectionTemplate {
-  id          String           @id @default(cuid())
+  id          String               @id @default(cuid())
   name        String
   propertyId  String?
-  property    Property?        @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  siteId      String?
+  property    Property?            @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  site        Site?                @relation(fields: [siteId], references: [id], onDelete: SetNull)
   areas       InspectionArea[]
+  protocols   InspectionProtocol[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  @@index([propertyId])
+  @@index([siteId])
+}
+
+model InspectionProtocol {
+  id          String           @id @default(cuid())
+  templateId  String
+  siteId      String?
+  employeeId  String?
+  weekStart   DateTime
+  status      InspectionStatus @default(OFFEN)
+  completedAt DateTime?
+  notes       String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
-  @@index([propertyId])
+  template    InspectionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  site        Site?              @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  employee    Employee?          @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  checks      InspectionCheck[]
+  @@unique([templateId, weekStart])
+  @@index([templateId])
+  @@index([siteId])
+  @@index([employeeId])
+  @@index([weekStart])
+}
+
+model InspectionCheck {
+  id         String              @id @default(cuid())
+  protocolId String
+  areaName   String
+  itemLabel  String
+  checked    Boolean             @default(false)
+  rating     Int?
+  note       String?
+  checkedAt  DateTime?
+  sortOrder  Int                 @default(0)
+  protocol   InspectionProtocol  @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+  @@index([protocolId])
 }
 
 model InspectionArea {
@@ -349,6 +451,89 @@ model InspectionItem {
   durationMinutes Int?
   order           Int            @default(0)
   @@index([areaId])
+}
+
+model Supplier {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  notes     String?
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  products  Product[]
+  orders    SupplyOrder[]
+}
+
+model Product {
+  id          String               @id @default(cuid())
+  name        String
+  unit        String?
+  unitPrice   Decimal              @db.Decimal(10, 2)
+  supplierId  String
+  supplier    Supplier             @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  isActive    Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  items       CustomerSupplyItem[]
+  orderItems  SupplyOrderItem[]
+  @@index([supplierId])
+}
+
+model CustomerSupplyItem {
+  id            String    @id @default(cuid())
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity      Int
+  intervalDays  Int
+  lastOrderedAt DateTime?
+  nextDueAt     DateTime
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  @@index([customerId])
+  @@index([productId])
+}
+
+enum SupplyOrderStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+model SupplyOrder {
+  id         String            @id @default(cuid())
+  supplierId String
+  supplier   Supplier          @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  status     SupplyOrderStatus @default(PENDING)
+  sentAt     DateTime?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  items      SupplyOrderItem[]
+  @@index([supplierId])
+}
+
+model SupplyOrderItem {
+  id         String      @id @default(cuid())
+  orderId    String
+  order      SupplyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customerId String
+  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity   Int
+  unitPrice  Decimal     @db.Decimal(10, 2)
+  billed     Boolean     @default(false)
+  invoiceId  String?
+  invoice    Invoice?    @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  createdAt  DateTime    @default(now())
+  @@index([orderId])
+  @@index([customerId])
+  @@index([invoiceId])
 }
 
 model InvoiceItem {

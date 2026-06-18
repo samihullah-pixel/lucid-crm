@@ -6,9 +6,10 @@ import { revalidatePath } from "next/cache";
 export async function createInspectionTemplate(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const propertyId = String(formData.get("propertyId") ?? "").trim() || null;
+  const siteId = String(formData.get("siteId") ?? "").trim() || null;
   if (!name) return;
   const template = await prisma.inspectionTemplate.create({
-    data: { name, propertyId },
+    data: { name, propertyId, siteId },
   });
   revalidatePath("/inspection-templates");
   redirect(`/inspection-templates/${template.id}/edit`);

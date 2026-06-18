@@ -1,23 +1,36 @@
 import { createInvoice } from "@/actions/invoices";
 
 type Customer = { id: string; companyName: string };
-type Property = { id: string; name: string };
+type Property = { id: string; name: string; customerId?: string };
 
 const statusOptions = ["ENTWURF", "ERSTELLT", "VERSENDET", "BEZAHLT", "STORNIERT"];
 
 export function InvoiceForm({
   customers,
   properties,
+  preselectedCustomerId,
+  supplyNetHint,
 }: {
   customers: Customer[];
   properties: Property[];
+  preselectedCustomerId?: string;
+  supplyNetHint?: number;
 }) {
+  const filteredProperties = preselectedCustomerId
+    ? properties.filter((p) => !p.customerId || p.customerId === preselectedCustomerId)
+    : properties;
+
   return (
-    <form action={createInvoice} className="border border-gold/20 bg-white p-6">
+    <form id="invoice-form" action={createInvoice} className="border border-gold/20 bg-white p-6">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Kunde</label>
-          <select name="customerId" required className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none">
+          <select
+            name="customerId"
+            required
+            defaultValue={preselectedCustomerId ?? ""}
+            className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+          >
             <option value="">Bitte waehlen</option>
             {customers.map((c) => (
               <option key={c.id} value={c.id}>
@@ -30,7 +43,7 @@ export function InvoiceForm({
           <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Objekt (optional)</label>
           <select name="propertyId" className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none">
             <option value="">-</option>
-            {properties.map((p) => (
+            {filteredProperties.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>
@@ -60,8 +73,15 @@ export function InvoiceForm({
           <input name="servicePeriodTo" type="date" required className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
         </div>
         <div>
-          <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Nettobetrag (EUR)</label>
-          <input name="netAmount" type="number" step="0.01" required className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+          <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">
+            Nettobetrag Regelleistung (EUR)
+            {supplyNetHint !== undefined && supplyNetHint > 0 && (
+              <span className="ml-2 font-normal text-gold-dark">
+                + {supplyNetHint.toFixed(2)} € Verbrauchsmittel werden addiert
+              </span>
+            )}
+          </label>
+          <input name="netAmount" type="number" step="0.01" defaultValue="0" required className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
         </div>
         <div>
           <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Steuersatz (%)</label>
