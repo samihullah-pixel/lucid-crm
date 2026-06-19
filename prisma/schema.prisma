@@ -116,6 +116,7 @@ model Procedure {
   name        String
   serviceType ServiceType?
   description String?
+  translations Json?
   isActive    Boolean              @default(true)
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
@@ -136,6 +137,7 @@ model ProcedureStep {
   mediaType     StepMediaType @default(NONE)
   tip           String?
   warning       String?
+  translations  Json?
   requiresCheck Boolean       @default(false)
   order         Int           @default(0)
   @@index([procedureId])
@@ -148,6 +150,7 @@ model EquipmentItem {
   iconKey         String?
   imageUrl        String?
   defaultLocation String?
+  translations    Json?
   isActive        Boolean              @default(true)
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
@@ -181,6 +184,7 @@ model SiteProcedure {
   waterLocation String?
   accessNote    String?
   emergencyNote String?
+  translations  Json?
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
