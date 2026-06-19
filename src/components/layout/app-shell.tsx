@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, Suspense } from "react";
+import { ReactNode, Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -75,6 +75,7 @@ const navigation: NavGroup[] = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
@@ -82,28 +83,36 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-light text-black">
       <div className="mx-auto flex max-w-7xl">
-        <input type="checkbox" id="mobile-nav-toggle" className="peer hidden" />
-
-        <label
-          htmlFor="mobile-nav-toggle"
+        <button
+          type="button"
+          onClick={() => setMenuOpen((o) => !o)}
           className="fixed left-4 top-4 z-50 flex h-10 w-10 cursor-pointer items-center justify-center rounded bg-black text-white md:hidden"
-          aria-label="Menue oeffnen/schliessen"
+          aria-label="Menü öffnen/schließen"
+          aria-expanded={menuOpen}
         >
           <span className="flex flex-col gap-1">
             <span className="block h-0.5 w-5 bg-white" />
             <span className="block h-0.5 w-5 bg-white" />
             <span className="block h-0.5 w-5 bg-white" />
           </span>
-        </label>
+        </button>
 
-        <aside className="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full overflow-y-auto bg-black p-6 transition-transform duration-200 peer-checked:translate-x-0 md:static md:translate-x-0">
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto bg-black p-6 transition-transform duration-200 md:static md:translate-x-0",
+            menuOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
           <div className="mb-6 mt-12 rounded bg-white p-3 md:mt-0">
             <img src="/lucid-logo.svg" alt="Lucid*" className="w-full" />
           </div>
 
           <button
             type="button"
-            onClick={openPalette}
+            onClick={() => {
+              setMenuOpen(false);
+              openPalette();
+            }}
             className="mb-8 flex w-full items-center gap-2.5 rounded border border-white/10 bg-white/5 px-3 py-2.5 font-sans text-[11px] font-light uppercase tracking-[2px] text-grey transition-colors hover:border-gold/40 hover:text-gold"
           >
             <Search className="h-3.5 w-3.5" strokeWidth={1.5} />
@@ -127,6 +136,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <Link
                         key={item.href}
                         href={item.href}
+                        onClick={() => setMenuOpen(false)}
                         className={cn(
                           "flex items-center gap-3 rounded px-3 py-2 font-sans text-[11px] font-light uppercase tracking-[2.5px] transition-colors",
                           active
@@ -154,11 +164,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </form>
         </aside>
 
-        <label
-          htmlFor="mobile-nav-toggle"
-          className="fixed inset-0 z-30 hidden bg-black/50 peer-checked:block md:hidden"
-          aria-hidden="true"
-        />
+        {menuOpen && (
+          <div
+            onClick={() => setMenuOpen(false)}
+            className="fixed inset-0 z-30 bg-black/50 md:hidden"
+            aria-hidden="true"
+          />
+        )}
 
         <main className="min-w-0 flex-1 p-4 pt-20 md:p-10 md:pt-10">{children}</main>
       </div>
