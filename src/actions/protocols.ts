@@ -56,7 +56,7 @@ export async function createProtocol(formData: FormData) {
   });
 
   revalidateAll();
-  redirect(`/protokolle/${protocol.id}`);
+  redirect(`/protokolle/${protocol.id}?flash=` + encodeURIComponent("Kontrolle angelegt"));
 }
 
 export async function toggleCheck(formData: FormData) {
@@ -122,7 +122,7 @@ export async function completeProtocol(formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/protokolle");
+  redirect("/protokolle?flash=" + encodeURIComponent("Kontrolle abgeschlossen"));
 }
 
 export async function reopenProtocol(formData: FormData) {

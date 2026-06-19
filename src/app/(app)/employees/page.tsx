@@ -31,14 +31,14 @@ export default async function EmployeesPage() {
           </Link>
         </div>
       </div>
-      <div className="border border-gold/20 bg-white p-6">
+      <div className="rounded-lg border border-gold/20 bg-white p-6">
         {employees.length === 0 ? (
           <p className="font-sans text-sm font-light text-grey">Noch keine Mitarbeiter vorhanden.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] text-left text-sm">
               <thead>
-                <tr className="border-b border-black/10 text-[11px] uppercase tracking-wide text-grey">
+                <tr className="border-b border-black/10 text-[10px] uppercase tracking-[2px] text-grey">
                   <th className="py-2 pr-4">Name</th>
                   <th className="py-2 pr-4">E-Mail</th>
                   <th className="py-2 pr-4">Telefon</th>
@@ -51,7 +51,7 @@ export default async function EmployeesPage() {
                 {employees.map((e) => {
                   const del = deleteEmployee.bind(null, e.id);
                   return (
-                    <tr key={e.id} className="border-b border-black/10 last:border-0 hover:bg-light/40">
+                    <tr key={e.id} className="border-b border-black/5 last:border-0 transition-colors hover:bg-light/60">
                       <td className="py-2 pr-4 font-sans">{e.firstName} {e.lastName}</td>
                       <td className="py-2 pr-4">{e.email ?? "—"}</td>
                       <td className="py-2 pr-4">{e.phone ?? "—"}</td>

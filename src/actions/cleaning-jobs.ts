@@ -30,7 +30,7 @@ export async function createCleaningJob(formData: FormData) {
   });
 
   revalidatePath("/cleaning-jobs");
-  redirect("/cleaning-jobs");
+  redirect("/cleaning-jobs?flash=" + encodeURIComponent("Einsatz angelegt"));
 }
 
 export async function updateCleaningJob(id: string, formData: FormData) {
@@ -40,7 +40,7 @@ export async function updateCleaningJob(id: string, formData: FormData) {
   });
 
   revalidatePath("/cleaning-jobs");
-  redirect("/cleaning-jobs");
+  redirect("/cleaning-jobs?flash=" + encodeURIComponent("Einsatz gespeichert"));
 }
 
 export async function deleteCleaningJob(id: string) {

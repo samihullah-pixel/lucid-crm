@@ -23,5 +23,5 @@ export async function createExtraWork(formData: FormData) {
   });
 
   revalidatePath("/extra-works");
-  redirect("/extra-works");
+  redirect("/extra-works?flash=" + encodeURIComponent("Zusatzarbeit angelegt"));
 }

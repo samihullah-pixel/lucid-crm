@@ -34,7 +34,7 @@ export async function createCustomer(formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/customers");
+  redirect("/customers?flash=" + encodeURIComponent("Kunde angelegt"));
 }
 
 export async function updateCustomer(id: string, formData: FormData) {
@@ -44,7 +44,7 @@ export async function updateCustomer(id: string, formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/customers");
+  redirect("/customers?flash=" + encodeURIComponent("Kunde gespeichert"));
 }
 
 export async function deleteCustomer(id: string) {

@@ -28,38 +28,64 @@ export default async function CustomersPage() {
           </Link>
         </div>
       </div>
-      <div className="border border-gold/20 bg-white p-6">
+      <div className="overflow-hidden rounded-lg border border-gold/20 bg-white">
         {customers.length === 0 ? (
-          <p className="font-sans text-sm font-light text-grey">Noch keine Kunden vorhanden.</p>
+          <p className="p-6 font-sans text-sm font-light text-grey">Noch keine Kunden vorhanden.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
+            <table className="w-full min-w-[680px] text-left text-sm">
               <thead>
-                <tr className="border-b border-black/10 text-[11px] uppercase tracking-wide text-grey">
-                  <th className="py-2 pr-4">Kd.-Nr.</th>
-                  <th className="py-2 pr-4">Firma</th>
-                  <th className="py-2 pr-4">Ansprechpartner</th>
-                  <th className="py-2 pr-4">E-Mail</th>
-                  <th className="py-2 pr-4">Telefon</th>
-                  <th className="py-2 pr-4" />
+                <tr className="border-b border-black/10 text-[10px] uppercase tracking-[2px] text-grey">
+                  <th className="px-6 py-3.5 font-normal">Kunde</th>
+                  <th className="px-6 py-3.5 font-normal">Ansprechpartner</th>
+                  <th className="px-6 py-3.5 font-normal">E-Mail</th>
+                  <th className="px-6 py-3.5 font-normal">Telefon</th>
+                  <th className="px-6 py-3.5 font-normal">Status</th>
+                  <th className="px-6 py-3.5" />
                 </tr>
               </thead>
               <tbody>
                 {customers.map((c) => {
                   const del = deleteCustomer.bind(null, c.id);
+                  const initials = c.companyName
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map((w) => w[0])
+                    .join("")
+                    .toUpperCase();
                   return (
-                    <tr key={c.id} className="border-b border-black/10 last:border-0 hover:bg-light/40">
-                      <td className="py-2 pr-4">{c.customerNumber}</td>
-                      <td className="py-2 pr-4">{c.companyName}</td>
-                      <td className="py-2 pr-4">{c.contactPerson ?? "—"}</td>
-                      <td className="py-2 pr-4">{c.email ?? "—"}</td>
-                      <td className="py-2 pr-4">{c.phone ?? "—"}</td>
-                      <td className="py-2 pr-4">
+                    <tr key={c.id} className="border-b border-black/5 last:border-0 transition-colors hover:bg-light/60">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-gold/20 bg-light text-[12px] tracking-wide text-gold-dark">
+                            {initials}
+                          </span>
+                          <div>
+                            <div className="font-sans text-black">{c.companyName}</div>
+                            <div className="font-sans text-[11px] tracking-wide text-grey">{c.customerNumber}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-grey">{c.contactPerson ?? "—"}</td>
+                      <td className="px-6 py-4 text-grey">{c.email ?? "—"}</td>
+                      <td className="px-6 py-4 text-grey">{c.phone ?? "—"}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={
+                            c.isActive
+                              ? "rounded-full bg-gold/15 px-3 py-1 text-[10px] uppercase tracking-[1.5px] text-gold-dark"
+                              : "rounded-full bg-black/5 px-3 py-1 text-[10px] uppercase tracking-[1.5px] text-grey"
+                          }
+                        >
+                          {c.isActive ? "Aktiv" : "Inaktiv"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <Link href={`/customers/${c.id}/edit`} className="font-sans text-[11px] uppercase tracking-wide text-gold-dark hover:text-gold">
                             Öffnen
                           </Link>
-                          <DeleteButton action={del} confirm={`Kunde "${c.companyName}" wirklich löschen?`} />
+                          <DeleteButton action={del} confirm={`Kunde "${c.companyName}" wirklich löschen?`} successMessage="Kunde gelöscht" />
                         </div>
                       </td>
                     </tr>

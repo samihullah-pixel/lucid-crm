@@ -34,11 +34,12 @@ function formatDateShort(date: Date): string {
   return `${String(date.getDate()).padStart(2, "0")}.${String(date.getMonth() + 1).padStart(2, "0")}.`;
 }
 
-export default async function DienstplanPage({
-  searchParams,
-}: {
-  searchParams: { date?: string };
-}) {
+export default async function DienstplanPage(
+  props: {
+    searchParams: Promise<{ date?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const refDate = searchParams.date ? new Date(searchParams.date) : new Date();
   const monday = getMonday(refDate);
   const sunday = addDays(monday, 6);

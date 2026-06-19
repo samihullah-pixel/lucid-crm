@@ -21,7 +21,7 @@ export async function createEmployee(formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/employees");
+  redirect("/employees?flash=" + encodeURIComponent("Mitarbeiter angelegt"));
 }
 
 export async function updateEmployee(id: string, formData: FormData) {
@@ -38,7 +38,7 @@ export async function updateEmployee(id: string, formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/employees");
+  redirect("/employees?flash=" + encodeURIComponent("Mitarbeiter gespeichert"));
 }
 
 export async function deleteEmployee(id: string) {

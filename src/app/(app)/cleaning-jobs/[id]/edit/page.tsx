@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { CleaningJobForm } from "@/components/forms/cleaning-job-form";
 
-export default async function EditCleaningJobPage({ params }: { params: { id: string } }) {
+export default async function EditCleaningJobPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const [job, customers, properties, employees] = await Promise.all([
     prisma.cleaningJob.findUnique({ where: { id: params.id } }),
     prisma.customer.findMany({

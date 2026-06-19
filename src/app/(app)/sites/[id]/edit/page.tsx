@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { updateSite } from "@/actions/sites";
 import { SiteForm } from "@/components/forms/site-form";
 
-export default async function EditSitePage({ params }: { params: { id: string } }) {
+export default async function EditSitePage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const site = await prisma.site.findUnique({
     where: { id: params.id },
     include: { shifts: { orderBy: { sortOrder: "asc" } } },

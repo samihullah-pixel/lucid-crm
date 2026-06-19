@@ -12,7 +12,7 @@ export async function createInspectionTemplate(formData: FormData) {
     data: { name, propertyId, siteId },
   });
   revalidatePath("/inspection-templates");
-  redirect(`/inspection-templates/${template.id}/edit`);
+  redirect(`/inspection-templates/${template.id}/edit?flash=` + encodeURIComponent("Aufnahmebogen angelegt"));
 }
 
 export async function updateInspectionTemplateMeta(id: string, formData: FormData) {
@@ -20,7 +20,7 @@ export async function updateInspectionTemplateMeta(id: string, formData: FormDat
   const propertyId = String(formData.get("propertyId") ?? "").trim() || null;
   await prisma.inspectionTemplate.update({ where: { id }, data: { name, propertyId } });
   revalidatePath("/inspection-templates");
-  redirect("/inspection-templates");
+  redirect("/inspection-templates?flash=" + encodeURIComponent("Aufnahmebogen gespeichert"));
 }
 
 export async function deleteInspectionTemplate(id: string) {
@@ -64,5 +64,5 @@ export async function saveInspectionAreas(
     }
   });
   revalidatePath("/inspection-templates");
-  redirect("/inspection-templates");
+  redirect("/inspection-templates?flash=" + encodeURIComponent("Aufnahmebogen gespeichert"));
 }

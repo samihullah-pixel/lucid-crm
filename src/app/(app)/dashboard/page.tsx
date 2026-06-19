@@ -4,6 +4,36 @@ import { getWeekRange, getMonthRange, addDays, toDateParam } from "@/lib/date-ra
 
 const weekdayShort = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
+const eur = new Intl.NumberFormat("de-DE", {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 0,
+});
+
+const weekdayLong = [
+  "Sonntag",
+  "Montag",
+  "Dienstag",
+  "Mittwoch",
+  "Donnerstag",
+  "Freitag",
+  "Samstag",
+];
+const monthLong = [
+  "Januar",
+  "Februar",
+  "März",
+  "April",
+  "Mai",
+  "Juni",
+  "Juli",
+  "August",
+  "September",
+  "Oktober",
+  "November",
+  "Dezember",
+];
+
 function buildGridDays(view: "week" | "month", refDate: Date): Date[] {
   if (view === "week") {
     const { start } = getWeekRange(refDate);
@@ -21,23 +51,69 @@ function buildGridDays(view: "week" | "month", refDate: Date): Date[] {
   return days;
 }
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: { view?: string; date?: string };
-}) {
+export default async function DashboardPage(
+  props: {
+    searchParams: Promise<{ view?: string; date?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const view: "week" | "month" = searchParams.view === "month" ? "month" : "week";
   const refDate = searchParams.date ? new Date(searchParams.date) : new Date();
   const today = new Date();
   const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const endOfDay = addDays(startOfDay, 1);
+  const { start: weekStart, end: weekEnd } = getWeekRange(today);
+  const { start: monthStart, end: monthEnd } = getMonthRange(today);
 
-  const [activeCustomers, jobsToday, openExtraWorks, openInvoices] = await Promise.all([
-    prisma.customer.count({ where: { isActive: true } }),
+  const [
+    jobsToday,
+    jobsThisWeek,
+    monthRevenue,
+    hoursThisWeek,
+    openInvoicesAgg,
+  ] = await Promise.all([
     prisma.cleaningJob.count({ where: { date: { gte: startOfDay, lt: endOfDay } } }),
-    prisma.extraWork.count({ where: { alreadyInvoiced: false, billable: true } }),
-    prisma.invoice.count({ where: { status: { in: ["ENTWURF", "ERSTELLT", "VERSENDET"] } } }),
+    prisma.cleaningJob.count({ where: { date: { gte: weekStart, lt: weekEnd } } }),
+    prisma.invoice.aggregate({
+      _sum: { grossAmount: true },
+      where: {
+        invoiceDate: { gte: monthStart, lt: monthEnd },
+        status: { in: ["ERSTELLT", "VERSENDET", "BEZAHLT"] },
+      },
+    }),
+    prisma.cleaningJob.aggregate({
+      _sum: { workedHours: true },
+      where: { date: { gte: weekStart, lt: weekEnd } },
+    }),
+    prisma.invoice.aggregate({
+      _sum: { grossAmount: true },
+      _count: true,
+      where: { status: { in: ["ENTWURF", "ERSTELLT", "VERSENDET"] } },
+    }),
   ]);
+
+  const revenue = Number(monthRevenue._sum.grossAmount ?? 0);
+  const hours = Number(hoursThisWeek._sum.workedHours ?? 0);
+  const openAmount = Number(openInvoicesAgg._sum.grossAmount ?? 0);
+  const openCount = openInvoicesAgg._count;
+
+  const kpis = [
+    { label: `Umsatz ${monthLong[today.getMonth()]}`, value: eur.format(revenue) },
+    { label: "Einsätze diese Woche", value: String(jobsThisWeek) },
+    { label: "Geleistete Stunden", value: `${hours.toLocaleString("de-DE")} h` },
+    {
+      label: "Offene Rechnungen",
+      value: eur.format(openAmount),
+      hint: `${openCount} ${openCount === 1 ? "Beleg" : "Belege"}`,
+    },
+  ];
+
+  const greeting =
+    today.getHours() < 11
+      ? "Guten Morgen"
+      : today.getHours() < 18
+        ? "Guten Tag"
+        : "Guten Abend";
 
   const gridDays = buildGridDays(view, refDate);
   const rangeStart = gridDays[0];
@@ -62,31 +138,29 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-3xl font-light text-black">Dashboard</h1>
-        <p className="font-sans text-sm font-light text-grey">
-          Uebersicht ueber Kunden, Einsaetze und Rechnungen.
+        <p className="font-sans text-[11px] font-light uppercase tracking-[3px] text-grey">
+          {weekdayLong[today.getDay()]}, {today.getDate()}. {monthLong[today.getMonth()]} {today.getFullYear()}
+        </p>
+        <h1 className="mt-2 font-serif text-4xl font-light text-black">{greeting}</h1>
+        <p className="mt-1 font-sans text-sm font-light text-grey">
+          {jobsToday} {jobsToday === 1 ? "Einsatz" : "Einsätze"} heute · {openCount} {openCount === 1 ? "Rechnung" : "Rechnungen"} offen
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <div className="border border-gold/20 bg-white p-4">
-          <p className="font-sans text-sm font-light text-grey">Aktive Kunden</p>
-          <p className="mt-2 font-serif text-2xl font-light text-black">{activeCustomers}</p>
-        </div>
-        <div className="border border-gold/20 bg-white p-4">
-          <p className="font-sans text-sm font-light text-grey">Einsaetze heute</p>
-          <p className="mt-2 font-serif text-2xl font-light text-black">{jobsToday}</p>
-        </div>
-        <div className="border border-gold/20 bg-white p-4">
-          <p className="font-sans text-sm font-light text-grey">Offene Zusatzarbeiten</p>
-          <p className="mt-2 font-serif text-2xl font-light text-black">{openExtraWorks}</p>
-        </div>
-        <div className="border border-gold/20 bg-white p-4">
-          <p className="font-sans text-sm font-light text-grey">Offene Rechnungen</p>
-          <p className="mt-2 font-serif text-2xl font-light text-black">{openInvoices}</p>
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {kpis.map((kpi) => (
+          <div key={kpi.label} className="rounded-lg border border-gold/20 bg-white p-5">
+            <p className="font-sans text-[11px] font-light uppercase tracking-[3px] text-grey">
+              {kpi.label}
+            </p>
+            <p className="mt-3 font-serif text-3xl font-light text-black">{kpi.value}</p>
+            {kpi.hint && (
+              <p className="mt-2 font-sans text-xs font-light tracking-wide text-grey">{kpi.hint}</p>
+            )}
+          </div>
+        ))}
       </div>
 
-      <div className="border border-gold/20 bg-white p-6">
+      <div className="rounded-lg border border-gold/20 bg-white p-6">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="font-serif text-xl font-light text-black">Kalender</h2>
           <div className="flex flex-wrap items-center gap-4">

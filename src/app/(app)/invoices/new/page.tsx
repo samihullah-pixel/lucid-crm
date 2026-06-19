@@ -8,11 +8,12 @@ async function selectCustomer(formData: FormData) {
   redirect(`/invoices/new?customerId=${id}`);
 }
 
-export default async function NewInvoicePage({
-  searchParams,
-}: {
-  searchParams: { customerId?: string };
-}) {
+export default async function NewInvoicePage(
+  props: {
+    searchParams: Promise<{ customerId?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [customers, properties] = await Promise.all([
     prisma.customer.findMany({
       orderBy: { companyName: "asc" },

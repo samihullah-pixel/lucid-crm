@@ -32,7 +32,7 @@ export async function createAppointment(formData: FormData) {
   });
 
   revalidatePath("/appointments");
-  redirect("/appointments");
+  redirect("/appointments?flash=" + encodeURIComponent("Termin angelegt"));
 }
 
 export async function updateAppointment(id: string, formData: FormData) {
@@ -42,7 +42,7 @@ export async function updateAppointment(id: string, formData: FormData) {
   });
 
   revalidatePath("/appointments");
-  redirect("/appointments");
+  redirect("/appointments?flash=" + encodeURIComponent("Termin gespeichert"));
 }
 
 export async function deleteAppointment(id: string) {

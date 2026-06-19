@@ -63,7 +63,7 @@ export default async function ProtokollePage() {
       </div>
 
       {templates.length > 0 && (
-        <div className="border border-gold/20 bg-white p-6">
+        <div className="rounded-lg border border-gold/20 bg-white p-6">
           <h2 className="mb-4 font-serif text-lg font-light text-black">
             Neues Protokoll erstellen
           </h2>

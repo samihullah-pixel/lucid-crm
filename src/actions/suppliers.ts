@@ -14,7 +14,7 @@ export async function createSupplier(formData: FormData) {
     },
   });
   revalidatePath("/suppliers");
-  redirect("/suppliers");
+  redirect("/suppliers?flash=" + encodeURIComponent("Lieferant angelegt"));
 }
 
 export async function updateSupplier(id: string, formData: FormData) {
@@ -28,7 +28,7 @@ export async function updateSupplier(id: string, formData: FormData) {
     },
   });
   revalidatePath("/suppliers");
-  redirect("/suppliers");
+  redirect("/suppliers?flash=" + encodeURIComponent("Lieferant gespeichert"));
 }
 
 export async function deleteSupplier(id: string) {
@@ -47,7 +47,7 @@ export async function createProduct(supplierId: string, formData: FormData) {
     },
   });
   revalidatePath("/suppliers");
-  redirect(`/suppliers/${supplierId}/edit`);
+  redirect(`/suppliers/${supplierId}/edit?flash=` + encodeURIComponent("Produkt angelegt"));
 }
 
 export async function deleteProduct(id: string, supplierId: string) {

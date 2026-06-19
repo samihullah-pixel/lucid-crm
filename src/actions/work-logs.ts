@@ -48,7 +48,7 @@ export async function createWorkLog(formData: FormData) {
   });
 
   revalidateAll();
-  redirect(`/arbeitsprotokoll/${workLog.id}`);
+  redirect(`/arbeitsprotokoll/${workLog.id}?flash=` + encodeURIComponent("Arbeitsprotokoll angelegt"));
 }
 
 export async function toggleWorkLogEntry(formData: FormData) {
@@ -86,7 +86,7 @@ export async function completeWorkLog(formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/arbeitsprotokoll");
+  redirect("/arbeitsprotokoll?flash=" + encodeURIComponent("Arbeitsprotokoll abgeschlossen"));
 }
 
 export async function reopenWorkLog(formData: FormData) {

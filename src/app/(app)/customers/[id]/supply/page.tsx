@@ -14,7 +14,8 @@ const INTERVAL_OPTIONS = [
   { label: "Quartalsweise", days: 90 },
 ];
 
-export default async function CustomerSupplyPage({ params }: { params: { id: string } }) {
+export default async function CustomerSupplyPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const customer = await prisma.customer.findUnique({ where: { id: params.id } });
   if (!customer) notFound();
 
@@ -56,7 +57,7 @@ export default async function CustomerSupplyPage({ params }: { params: { id: str
         ) : (
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-black/10 text-[11px] uppercase tracking-wide text-grey">
+              <tr className="border-b border-black/10 text-[10px] uppercase tracking-[2px] text-grey">
                 <th className="py-2 pr-4">Artikel</th>
                 <th className="py-2 pr-4">Lieferant</th>
                 <th className="py-2 pr-4">Menge</th>
@@ -73,7 +74,7 @@ export default async function CustomerSupplyPage({ params }: { params: { id: str
                 due.setHours(0, 0, 0, 0);
                 const isOverdue = due <= today && item.active;
                 return (
-                  <tr key={item.id} className="border-b border-black/10 last:border-0 hover:bg-light/40">
+                  <tr key={item.id} className="border-b border-black/5 last:border-0 transition-colors hover:bg-light/60">
                     <td className="py-2 pr-4">{item.product.name}</td>
                     <td className="py-2 pr-4 text-grey">{item.product.supplier.name}</td>
                     <td className="py-2 pr-4">{item.quantity} {item.product.unit ?? "Stk"}</td>
@@ -100,7 +101,7 @@ export default async function CustomerSupplyPage({ params }: { params: { id: str
 
       {/* Neuen Artikel hinzufügen */}
       {allProducts.length > 0 && (
-        <div className="border border-gold/20 bg-white p-6">
+        <div className="rounded-lg border border-gold/20 bg-white p-6">
           <h2 className="font-sans text-[11px] uppercase tracking-[2px] text-grey mb-4">Artikel hinzufügen</h2>
           <form action={addItem} className="grid grid-cols-2 gap-4 max-w-xl">
             <input type="hidden" name="customerId" value={params.id} />

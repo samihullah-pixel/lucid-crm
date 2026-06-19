@@ -1,11 +1,12 @@
 import { CleaningJobForm } from "@/components/forms/cleaning-job-form";
 import { prisma } from "@/lib/prisma";
 
-export default async function NewCleaningJobPage({
-  searchParams,
-}: {
-  searchParams: { date?: string };
-}) {
+export default async function NewCleaningJobPage(
+  props: {
+    searchParams: Promise<{ date?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [customers, properties, employees] = await Promise.all([
     prisma.customer.findMany({ orderBy: { companyName: "asc" }, select: { id: true, companyName: true } }),
     prisma.property.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, customerId: true } }),

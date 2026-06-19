@@ -23,14 +23,14 @@ export default async function SuppliersPage() {
           + Neuer Lieferant
         </Link>
       </div>
-      <div className="border border-gold/20 bg-white p-6">
+      <div className="rounded-lg border border-gold/20 bg-white p-6">
         {suppliers.length === 0 ? (
           <p className="font-sans text-sm font-light text-grey">Noch keine Lieferanten vorhanden.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[600px] text-left text-sm">
               <thead>
-                <tr className="border-b border-black/10 text-[11px] uppercase tracking-wide text-grey">
+                <tr className="border-b border-black/10 text-[10px] uppercase tracking-[2px] text-grey">
                   <th className="py-2 pr-4">Name</th>
                   <th className="py-2 pr-4">E-Mail</th>
                   <th className="py-2 pr-4">Telefon</th>
@@ -42,7 +42,7 @@ export default async function SuppliersPage() {
                 {suppliers.map((s) => {
                   const del = deleteSupplier.bind(null, s.id);
                   return (
-                    <tr key={s.id} className="border-b border-black/10 last:border-0 hover:bg-light/40">
+                    <tr key={s.id} className="border-b border-black/5 last:border-0 transition-colors hover:bg-light/60">
                       <td className="py-2 pr-4 font-medium">{s.name}</td>
                       <td className="py-2 pr-4">{s.email}</td>
                       <td className="py-2 pr-4">{s.phone ?? "—"}</td>
