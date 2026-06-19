@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { upload } from "@vercel/blob/client";
 import {
   Plus,
   Trash2,
@@ -15,7 +16,11 @@ import {
   AlertTriangle,
   Lightbulb,
   QrCode,
+  ImagePlus,
+  Loader2,
+  X,
 } from "lucide-react";
+import type { StepMediaType } from "@prisma/client";
 import {
   saveProcedure,
   updateProcedureMeta,
@@ -36,6 +41,8 @@ type Step = {
   tip: string;
   warning: string;
   requiresCheck: boolean;
+  mediaUrl: string;
+  mediaType: StepMediaType;
 };
 type Equip = { key: string; id?: string; equipmentId: string; name: string; locationNote: string };
 type LibItem = { id: string; name: string; defaultLocation: string | null };
@@ -75,13 +82,33 @@ export function ProcedureBuilder({
     initialEquipment.map((e) => ({ ...e, key: nextKey() }))
   );
   const [library, setLibrary] = useState<LibItem[]>(equipmentLibrary);
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const uploadMedia = async (key: string, file: File) => {
+    const isVideo = file.type.startsWith("video");
+    setUploadingKey(key);
+    try {
+      const blob = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: "/api/sop/upload",
+      });
+      updateStep(key, { mediaUrl: blob.url, mediaType: isVideo ? "VIDEO" : "PHOTO" });
+      toast.success(isVideo ? "Video hochgeladen" : "Foto hochgeladen");
+    } catch (e) {
+      toast.error(
+        "Upload fehlgeschlagen – Blob-Store verbunden? (" + (e as Error).message + ")"
+      );
+    } finally {
+      setUploadingKey(null);
+    }
+  };
 
   // ── Steps ──
   const addStep = () =>
     setSteps((s) => [
       ...s,
-      { key: nextKey(), section: "", title: "", body: "", tip: "", warning: "", requiresCheck: false },
+      { key: nextKey(), section: "", title: "", body: "", tip: "", warning: "", requiresCheck: false, mediaUrl: "", mediaType: "NONE" },
     ]);
   const updateStep = (key: string, patch: Partial<Step>) =>
     setSteps((s) => s.map((st) => (st.key === key ? { ...st, ...patch } : st)));
@@ -149,8 +176,8 @@ export function ProcedureBuilder({
           tip: s.tip.trim() || null,
           warning: s.warning.trim() || null,
           requiresCheck: s.requiresCheck,
-          mediaUrl: null,
-          mediaType: "NONE" as const,
+          mediaUrl: s.mediaUrl.trim() || null,
+          mediaType: s.mediaType,
           order: i,
         })),
         equipment.map((e, i) => ({
@@ -203,6 +230,12 @@ export function ProcedureBuilder({
               <button onClick={() => moveStep(i, 1)} aria-label="Runter" className="text-grey hover:text-black"><ChevronDown className="h-4 w-4" /></button>
               <button onClick={() => removeStep(s.key)} aria-label="Löschen" className="text-grey hover:text-red-600"><Trash2 className="h-4 w-4" /></button>
             </div>
+            <StepMedia
+              step={s}
+              uploading={uploadingKey === s.key}
+              onUpload={(file) => uploadMedia(s.key, file)}
+              onRemove={() => updateStep(s.key, { mediaUrl: "", mediaType: "NONE" })}
+            />
             <input
               value={s.title}
               onChange={(e) => updateStep(s.key, { title: e.target.value })}
@@ -401,6 +434,71 @@ function SiteAssignments({
         </button>
       </div>
     </section>
+  );
+}
+
+function StepMedia({
+  step,
+  uploading,
+  onUpload,
+  onRemove,
+}: {
+  step: Step;
+  uploading: boolean;
+  onUpload: (file: File) => void;
+  onRemove: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  if (step.mediaUrl) {
+    return (
+      <div className="relative mt-3 overflow-hidden rounded-lg border border-black/10">
+        {step.mediaType === "VIDEO" ? (
+          <video src={step.mediaUrl} controls className="h-40 w-full bg-black object-contain" />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={step.mediaUrl} alt="" className="h-40 w-full object-cover" />
+        )}
+        <button
+          onClick={onRemove}
+          aria-label="Medium entfernen"
+          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*,video/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onUpload(f);
+          e.target.value = "";
+        }}
+      />
+      <button
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-black/15 py-4 font-sans text-[11px] uppercase tracking-[2px] text-grey hover:border-gold hover:text-gold-dark disabled:opacity-60"
+      >
+        {uploading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" /> Lädt hoch…
+          </>
+        ) : (
+          <>
+            <ImagePlus className="h-4 w-4" /> Foto / Video hinzufügen
+          </>
+        )}
+      </button>
+    </div>
   );
 }
 
