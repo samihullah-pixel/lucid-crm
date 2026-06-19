@@ -14,6 +14,7 @@ import {
   ExternalLink,
   AlertTriangle,
   Lightbulb,
+  QrCode,
 } from "lucide-react";
 import {
   saveProcedure,
@@ -370,6 +371,7 @@ function SiteAssignments({
             </div>
             <div className="mt-2 flex items-center gap-2">
               <code className="flex-1 truncate rounded bg-light px-2 py-1.5 font-mono text-xs text-grey">{url}</code>
+              <Link href={`/sop-procedures/qr/${a.qrToken}`} className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="QR drucken"><QrCode className="h-4 w-4" /></Link>
               <button onClick={() => copy(url)} className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="Kopieren"><Copy className="h-4 w-4" /></button>
               <a href={url} target="_blank" rel="noreferrer" className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="Öffnen"><ExternalLink className="h-4 w-4" /></a>
             </div>
