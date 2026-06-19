@@ -39,6 +39,8 @@ export default async function EditProcedurePage(props: {
         tip: s.tip ?? "",
         warning: s.warning ?? "",
         requiresCheck: s.requiresCheck,
+        mediaUrl: s.mediaUrl ?? "",
+        mediaType: s.mediaType,
       }))}
       initialEquipment={procedure.equipment.map((e) => ({
         id: e.id,
