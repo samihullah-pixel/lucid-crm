@@ -100,6 +100,93 @@ model Site {
   inspectionTemplates InspectionTemplate[]
   inspectionProtocols InspectionProtocol[]
   workLogs            WorkLog[]
+  siteProcedures      SiteProcedure[]
+}
+
+enum StepMediaType {
+  NONE
+  PHOTO
+  VIDEO
+}
+
+// A reusable, generic cleaning procedure (e.g. "Bus-Innenreinigung").
+// Acts as the master template; sites adopt it via SiteProcedure.
+model Procedure {
+  id          String               @id @default(cuid())
+  name        String
+  serviceType ServiceType?
+  description String?
+  isActive    Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  steps       ProcedureStep[]
+  equipment   ProcedureEquipment[]
+  sites       SiteProcedure[]
+}
+
+// One step in a procedure, shown one-per-screen on mobile.
+model ProcedureStep {
+  id            String        @id @default(cuid())
+  procedureId   String
+  procedure     Procedure     @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  section       String?
+  title         String
+  body          String?
+  mediaUrl      String?
+  mediaType     StepMediaType @default(NONE)
+  tip           String?
+  warning       String?
+  requiresCheck Boolean       @default(false)
+  order         Int           @default(0)
+  @@index([procedureId])
+}
+
+// Reusable equipment/material definition with photo and default location.
+model EquipmentItem {
+  id              String               @id @default(cuid())
+  name            String
+  iconKey         String?
+  imageUrl        String?
+  defaultLocation String?
+  isActive        Boolean              @default(true)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  procedures      ProcedureEquipment[]
+}
+
+// Which equipment a procedure needs, with an optional location override.
+model ProcedureEquipment {
+  id           String        @id @default(cuid())
+  procedureId  String
+  procedure    Procedure     @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  equipmentId  String
+  equipment    EquipmentItem @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  locationNote String?
+  order        Int           @default(0)
+  @@unique([procedureId, equipmentId])
+  @@index([procedureId])
+  @@index([equipmentId])
+}
+
+// A site adopting a procedure. The QR code encodes qrToken and opens the
+// public, login-free guide; local fields override generic content.
+model SiteProcedure {
+  id            String    @id @default(cuid())
+  siteId        String
+  site          Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  procedureId   String
+  procedure     Procedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  qrToken       String    @unique @default(cuid())
+  welcomeText   String?
+  waterLocation String?
+  accessNote    String?
+  emergencyNote String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  @@unique([siteId, procedureId])
+  @@index([siteId])
+  @@index([procedureId])
 }
 
 model Shift {

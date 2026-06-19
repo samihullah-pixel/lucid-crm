@@ -7,8 +7,6 @@ export const metadata = {
   description: "Kunden, Objekte, Einsaetze und Rechnungen verwalten",
 };
 
-const WORD = "Lucid";
-
 export default function RootLayout({
   children,
 }: {
@@ -17,22 +15,6 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body>
-        <div className="intro-overlay" aria-hidden="true">
-          <div className="intro-word">
-            {WORD.split("").map((ch, i) => (
-              <span
-                key={i}
-                className="intro-letter"
-                style={{ animationDelay: `${200 + i * 90}ms` }}
-              >
-                {ch}
-              </span>
-            ))}
-            <span className="intro-star">*</span>
-          </div>
-          <div className="intro-line" />
-          <div className="intro-tagline">Cleaning Services</div>
-        </div>
         {children}
         <Toaster
           position="bottom-right"
