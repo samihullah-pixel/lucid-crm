@@ -24,10 +24,6 @@ body {
   animation: intro-bg 900ms ease-in-out 2000ms forwards,
     intro-fade 700ms ease 2900ms forwards;
 }
-/* Repeat visits in the same session: never show, never flash */
-html.intro-seen .intro-overlay {
-  display: none;
-}
 
 .intro-word {
   display: flex;

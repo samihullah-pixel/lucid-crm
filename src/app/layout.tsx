@@ -9,8 +9,6 @@ export const metadata = {
 
 const WORD = "Lucid";
 
-const introScript = `(function(){try{if(sessionStorage.getItem('lucid-intro-seen')){document.documentElement.classList.add('intro-seen');}else{sessionStorage.setItem('lucid-intro-seen','1');}}catch(e){}})();`;
-
 export default function RootLayout({
   children,
 }: {
@@ -18,9 +16,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de">
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: introScript }} />
-      </head>
       <body>
         <div className="intro-overlay" aria-hidden="true">
           <div className="intro-word">
