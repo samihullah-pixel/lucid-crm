@@ -1,0 +1,409 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import Link from "next/link";
+import { toast } from "sonner";
+import {
+  Plus,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  GripVertical,
+  Save,
+  Copy,
+  ExternalLink,
+  AlertTriangle,
+  Lightbulb,
+} from "lucide-react";
+import {
+  saveProcedure,
+  updateProcedureMeta,
+  createEquipmentItem,
+  assignProcedureToSite,
+  removeSiteAssignment,
+} from "@/actions/procedures";
+
+let keySeq = 0;
+const nextKey = () => `k${keySeq++}`;
+
+type Step = {
+  key: string;
+  id?: string;
+  section: string;
+  title: string;
+  body: string;
+  tip: string;
+  warning: string;
+  requiresCheck: boolean;
+};
+type Equip = { key: string; id?: string; equipmentId: string; name: string; locationNote: string };
+type LibItem = { id: string; name: string; defaultLocation: string | null };
+type Site = { id: string; name: string };
+type Assignment = {
+  id: string;
+  siteId: string;
+  siteName: string;
+  qrToken: string;
+  welcomeText: string;
+  waterLocation: string;
+  accessNote: string;
+  emergencyNote: string;
+};
+
+export function ProcedureBuilder({
+  procedure,
+  initialSteps,
+  initialEquipment,
+  equipmentLibrary,
+  sites,
+  assignments,
+}: {
+  procedure: { id: string; name: string; description: string | null };
+  initialSteps: Omit<Step, "key">[];
+  initialEquipment: Omit<Equip, "key">[];
+  equipmentLibrary: LibItem[];
+  sites: Site[];
+  assignments: Assignment[];
+}) {
+  const [name, setName] = useState(procedure.name);
+  const [description, setDescription] = useState(procedure.description ?? "");
+  const [steps, setSteps] = useState<Step[]>(
+    initialSteps.map((s) => ({ ...s, key: nextKey() }))
+  );
+  const [equipment, setEquipment] = useState<Equip[]>(
+    initialEquipment.map((e) => ({ ...e, key: nextKey() }))
+  );
+  const [library, setLibrary] = useState<LibItem[]>(equipmentLibrary);
+  const [pending, startTransition] = useTransition();
+
+  // ── Steps ──
+  const addStep = () =>
+    setSteps((s) => [
+      ...s,
+      { key: nextKey(), section: "", title: "", body: "", tip: "", warning: "", requiresCheck: false },
+    ]);
+  const updateStep = (key: string, patch: Partial<Step>) =>
+    setSteps((s) => s.map((st) => (st.key === key ? { ...st, ...patch } : st)));
+  const removeStep = (key: string) => setSteps((s) => s.filter((st) => st.key !== key));
+  const moveStep = (i: number, dir: -1 | 1) =>
+    setSteps((s) => {
+      const j = i + dir;
+      if (j < 0 || j >= s.length) return s;
+      const copy = [...s];
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+      return copy;
+    });
+
+  // ── Equipment ──
+  const addEquipFromLib = (id: string) => {
+    if (!id) return;
+    const lib = library.find((l) => l.id === id);
+    if (!lib) return;
+    if (equipment.some((e) => e.equipmentId === id)) {
+      toast.error("Bereits hinzugefügt");
+      return;
+    }
+    setEquipment((e) => [
+      ...e,
+      { key: nextKey(), equipmentId: id, name: lib.name, locationNote: lib.defaultLocation ?? "" },
+    ]);
+  };
+  const removeEquip = (key: string) => setEquipment((e) => e.filter((x) => x.key !== key));
+  const updateEquip = (key: string, patch: Partial<Equip>) =>
+    setEquipment((e) => e.map((x) => (x.key === key ? { ...x, ...patch } : x)));
+
+  const [newEqName, setNewEqName] = useState("");
+  const [newEqLoc, setNewEqLoc] = useState("");
+  const addNewEquipment = () => {
+    const n = newEqName.trim();
+    if (!n) return;
+    startTransition(async () => {
+      const item = await createEquipmentItem(n, newEqLoc.trim() || null);
+      setLibrary((l) => [...l, item]);
+      setEquipment((e) => [
+        ...e,
+        { key: nextKey(), equipmentId: item.id, name: item.name, locationNote: item.defaultLocation ?? "" },
+      ]);
+      setNewEqName("");
+      setNewEqLoc("");
+      toast.success("Equipment hinzugefügt");
+    });
+  };
+
+  // ── Save ──
+  const save = () => {
+    if (steps.some((s) => !s.title.trim())) {
+      toast.error("Jeder Schritt braucht einen Titel");
+      return;
+    }
+    startTransition(async () => {
+      await updateProcedureMeta(procedure.id, toFD({ name, description }));
+      await saveProcedure(
+        procedure.id,
+        steps.map((s, i) => ({
+          id: s.id,
+          section: s.section.trim() || null,
+          title: s.title.trim(),
+          body: s.body.trim() || null,
+          tip: s.tip.trim() || null,
+          warning: s.warning.trim() || null,
+          requiresCheck: s.requiresCheck,
+          mediaUrl: null,
+          mediaType: "NONE" as const,
+          order: i,
+        })),
+        equipment.map((e, i) => ({
+          id: e.id,
+          equipmentId: e.equipmentId,
+          locationNote: e.locationNote.trim() || null,
+          order: i,
+        }))
+      );
+      toast.success("Anleitung gespeichert");
+    });
+  };
+
+  return (
+    <div className="max-w-3xl space-y-8 pb-24">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <Link href="/sop-procedures" className="font-sans text-[11px] uppercase tracking-[2px] text-grey hover:text-gold-dark">
+            ← Anleitungen
+          </Link>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="mt-2 w-full bg-transparent font-serif text-3xl font-light text-black focus:outline-none"
+          />
+          <input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Kurzbeschreibung…"
+            className="mt-1 w-full bg-transparent font-sans text-sm font-light text-grey focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* STEPS */}
+      <section className="space-y-3">
+        <h2 className="font-sans text-[11px] uppercase tracking-[3px] text-grey">Schritte</h2>
+        {steps.map((s, i) => (
+          <div key={s.key} className="rounded-lg border border-gold/20 bg-white p-4">
+            <div className="flex items-center gap-2">
+              <GripVertical className="h-4 w-4 text-grey/50" />
+              <span className="font-serif text-lg text-gold-dark">{i + 1}</span>
+              <input
+                value={s.section}
+                onChange={(e) => updateStep(s.key, { section: e.target.value })}
+                placeholder="Abschnitt (z.B. Fahrerkabine)"
+                className="ml-2 flex-1 rounded border border-black/10 px-2 py-1 font-sans text-xs text-grey focus:border-gold focus:outline-none"
+              />
+              <button onClick={() => moveStep(i, -1)} aria-label="Hoch" className="text-grey hover:text-black"><ChevronUp className="h-4 w-4" /></button>
+              <button onClick={() => moveStep(i, 1)} aria-label="Runter" className="text-grey hover:text-black"><ChevronDown className="h-4 w-4" /></button>
+              <button onClick={() => removeStep(s.key)} aria-label="Löschen" className="text-grey hover:text-red-600"><Trash2 className="h-4 w-4" /></button>
+            </div>
+            <input
+              value={s.title}
+              onChange={(e) => updateStep(s.key, { title: e.target.value })}
+              placeholder="Titel des Schritts *"
+              className="mt-3 w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+            />
+            <textarea
+              value={s.body}
+              onChange={(e) => updateStep(s.key, { body: e.target.value })}
+              placeholder="Beschreibung / Anleitung…"
+              rows={2}
+              className="mt-2 w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+            />
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              <div className="flex items-start gap-2 rounded bg-gold/5 px-2 py-1.5">
+                <Lightbulb className="mt-1.5 h-3.5 w-3.5 flex-shrink-0 text-gold-dark" />
+                <input
+                  value={s.tip}
+                  onChange={(e) => updateStep(s.key, { tip: e.target.value })}
+                  placeholder="Tipp (optional)"
+                  className="w-full bg-transparent py-1 font-sans text-xs text-gold-dark focus:outline-none"
+                />
+              </div>
+              <div className="flex items-start gap-2 rounded bg-[#f6e7e3] px-2 py-1.5">
+                <AlertTriangle className="mt-1.5 h-3.5 w-3.5 flex-shrink-0 text-[#b3402f]" />
+                <input
+                  value={s.warning}
+                  onChange={(e) => updateStep(s.key, { warning: e.target.value })}
+                  placeholder="Warnung (optional)"
+                  className="w-full bg-transparent py-1 font-sans text-xs text-[#b3402f] focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+        <button
+          onClick={addStep}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gold/40 py-3 font-sans text-[11px] uppercase tracking-[2px] text-gold-dark hover:bg-gold/5"
+        >
+          <Plus className="h-4 w-4" /> Schritt hinzufügen
+        </button>
+      </section>
+
+      {/* EQUIPMENT */}
+      <section className="space-y-3">
+        <h2 className="font-sans text-[11px] uppercase tracking-[3px] text-grey">Equipment & Material</h2>
+        {equipment.map((e) => (
+          <div key={e.key} className="flex items-center gap-3 rounded-lg border border-gold/20 bg-white p-3">
+            <span className="font-sans text-sm text-black">{e.name}</span>
+            <input
+              value={e.locationNote}
+              onChange={(ev) => updateEquip(e.key, { locationNote: ev.target.value })}
+              placeholder="Fundort (z.B. Lager, Wand links)"
+              className="ml-auto w-1/2 rounded border border-black/10 px-2 py-1 font-sans text-xs text-grey focus:border-gold focus:outline-none"
+            />
+            <button onClick={() => removeEquip(e.key)} aria-label="Entfernen" className="text-grey hover:text-red-600"><Trash2 className="h-4 w-4" /></button>
+          </div>
+        ))}
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-black/10 bg-light p-3">
+          <select
+            onChange={(ev) => { addEquipFromLib(ev.target.value); ev.target.value = ""; }}
+            defaultValue=""
+            className="rounded border border-black/15 bg-white px-2 py-1.5 font-sans text-xs focus:outline-none"
+          >
+            <option value="" disabled>Aus Bibliothek wählen…</option>
+            {library.map((l) => (
+              <option key={l.id} value={l.id}>{l.name}</option>
+            ))}
+          </select>
+          <span className="font-sans text-[11px] text-grey">oder neu:</span>
+          <input
+            value={newEqName}
+            onChange={(e) => setNewEqName(e.target.value)}
+            placeholder="Name"
+            className="w-32 rounded border border-black/15 px-2 py-1.5 font-sans text-xs focus:border-gold focus:outline-none"
+          />
+          <input
+            value={newEqLoc}
+            onChange={(e) => setNewEqLoc(e.target.value)}
+            placeholder="Fundort"
+            className="w-36 rounded border border-black/15 px-2 py-1.5 font-sans text-xs focus:border-gold focus:outline-none"
+          />
+          <button onClick={addNewEquipment} className="rounded-full bg-black px-3 py-1.5 font-sans text-[10px] uppercase tracking-[2px] text-gold">
+            + Anlegen
+          </button>
+        </div>
+      </section>
+
+      {/* SITES / QR */}
+      <SiteAssignments procedureId={procedure.id} sites={sites} assignments={assignments} pending={pending} startTransition={startTransition} />
+
+      {/* SAVE BAR */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-white/95 backdrop-blur md:left-64">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+          <span className="font-sans text-xs text-grey">{steps.length} Schritte · {equipment.length} Equipment</span>
+          <button
+            onClick={save}
+            disabled={pending}
+            className="flex items-center gap-2 rounded-full bg-gradient-to-r from-gold-dark via-gold-light to-gold px-6 py-2.5 font-sans text-[11px] uppercase tracking-[3px] text-black disabled:opacity-50"
+          >
+            <Save className="h-4 w-4" /> {pending ? "Speichert…" : "Speichern"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SiteAssignments({
+  procedureId,
+  sites,
+  assignments,
+  pending,
+  startTransition,
+}: {
+  procedureId: string;
+  sites: Site[];
+  assignments: Assignment[];
+  pending: boolean;
+  startTransition: React.TransitionStartFunction;
+}) {
+  const [siteId, setSiteId] = useState("");
+  const [welcomeText, setWelcomeText] = useState("");
+  const [waterLocation, setWaterLocation] = useState("");
+  const [accessNote, setAccessNote] = useState("");
+  const [emergencyNote, setEmergencyNote] = useState("");
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+
+  const assign = () => {
+    if (!siteId) { toast.error("Standort wählen"); return; }
+    startTransition(async () => {
+      await assignProcedureToSite(procedureId, siteId, {
+        welcomeText: welcomeText.trim() || null,
+        waterLocation: waterLocation.trim() || null,
+        accessNote: accessNote.trim() || null,
+        emergencyNote: emergencyNote.trim() || null,
+      });
+      toast.success("Standort zugewiesen");
+      setSiteId(""); setWelcomeText(""); setWaterLocation(""); setAccessNote(""); setEmergencyNote("");
+    });
+  };
+
+  const copy = (url: string) => {
+    navigator.clipboard?.writeText(url);
+    toast.success("Link kopiert");
+  };
+
+  return (
+    <section className="space-y-3">
+      <h2 className="font-sans text-[11px] uppercase tracking-[3px] text-grey">Standorte & QR-Links</h2>
+
+      {assignments.map((a) => {
+        const url = `${origin}/sop/${a.qrToken}`;
+        return (
+          <div key={a.id} className="rounded-lg border border-gold/20 bg-white p-4">
+            <div className="flex items-center justify-between">
+              <span className="font-sans text-sm text-black">{a.siteName}</span>
+              <button
+                onClick={() => startTransition(async () => { await removeSiteAssignment(a.id, procedureId); toast.success("Entfernt"); })}
+                className="text-grey hover:text-red-600"
+                aria-label="Zuweisung entfernen"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <code className="flex-1 truncate rounded bg-light px-2 py-1.5 font-mono text-xs text-grey">{url}</code>
+              <button onClick={() => copy(url)} className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="Kopieren"><Copy className="h-4 w-4" /></button>
+              <a href={url} target="_blank" rel="noreferrer" className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="Öffnen"><ExternalLink className="h-4 w-4" /></a>
+            </div>
+          </div>
+        );
+      })}
+
+      <div className="space-y-2 rounded-lg border border-dashed border-gold/40 p-4">
+        <select
+          value={siteId}
+          onChange={(e) => setSiteId(e.target.value)}
+          className="w-full rounded border border-black/15 bg-white px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+        >
+          <option value="">Standort wählen…</option>
+          {sites.filter((s) => !assignments.some((a) => a.siteId === s.id)).map((s) => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <input value={welcomeText} onChange={(e) => setWelcomeText(e.target.value)} placeholder="Willkommenstext (optional)" className="rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+          <input value={waterLocation} onChange={(e) => setWaterLocation(e.target.value)} placeholder="Wo gibt es Wasser?" className="rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+          <input value={accessNote} onChange={(e) => setAccessNote(e.target.value)} placeholder="Zugang / Schlüssel" className="rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+          <input value={emergencyNote} onChange={(e) => setEmergencyNote(e.target.value)} placeholder="Notfall-Hinweis" className="rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+        </div>
+        <button onClick={assign} disabled={pending} className="rounded-full bg-black px-4 py-2 font-sans text-[10px] uppercase tracking-[2px] text-gold disabled:opacity-50">
+          + Standort zuweisen
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function toFD(obj: Record<string, string>) {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(obj)) fd.append(k, v);
+  return fd;
+}
