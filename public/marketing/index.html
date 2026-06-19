@@ -369,9 +369,83 @@
     .contact { grid-template-columns: 1fr; gap: 60px; padding: 80px 24px; }
     footer { flex-direction: column; gap: 16px; padding: 32px 24px; text-align: center; }
   }
+
+  /* ── Lucid Intro ── */
+  .intro-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #080808;
+    animation: intro-bg 900ms ease-in-out 2000ms forwards;
+  }
+  .intro-overlay.intro-done {
+    animation: intro-bg 900ms ease-in-out 2000ms forwards,
+      intro-fade 700ms ease 2700ms forwards;
+  }
+  .intro-word {
+    display: flex; font-family: var(--serif); font-weight: 300;
+    font-size: clamp(48px, 12vw, 120px); line-height: 1; color: #f7f6f4;
+    animation: intro-color 900ms ease-in-out 2000ms forwards;
+  }
+  .intro-letter {
+    display: inline-block; opacity: 0; transform: translateY(16px); filter: blur(6px);
+    animation: intro-letter 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .intro-star {
+    display: inline-block; color: var(--gold); font-size: 0.42em; align-self: flex-start;
+    margin-top: 0.18em; margin-left: 0.04em; opacity: 0;
+    transform: scale(0.2) rotate(-30deg);
+    animation: intro-star 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 1100ms forwards;
+  }
+  .intro-line {
+    margin-top: clamp(14px, 2vw, 26px); height: 1px; width: 0; background: var(--gold);
+    animation: intro-line 700ms ease 1300ms forwards;
+  }
+  .intro-tagline {
+    margin-top: 18px; font-family: var(--sans); font-weight: 300;
+    font-size: clamp(9px, 1.4vw, 11px); letter-spacing: 6px; text-transform: uppercase;
+    color: var(--grey); opacity: 0;
+    animation: intro-tagline 800ms ease 1500ms forwards,
+      intro-color 900ms ease-in-out 2000ms forwards;
+  }
+  @keyframes intro-letter { to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+  @keyframes intro-star { to { opacity: 1; transform: scale(1) rotate(0); } }
+  @keyframes intro-line { to { width: clamp(120px, 22vw, 260px); } }
+  @keyframes intro-tagline { to { opacity: 1; } }
+  @keyframes intro-bg { to { background: #f7f6f4; } }
+  @keyframes intro-color { to { color: #080808; } }
+  @keyframes intro-fade { to { opacity: 0; visibility: hidden; } }
+  @media (prefers-reduced-motion: reduce) {
+    .intro-overlay, .intro-overlay.intro-done, .intro-letter, .intro-star,
+    .intro-line, .intro-tagline, .intro-word {
+      animation: intro-fade 400ms ease 200ms forwards;
+    }
+  }
 </style>
 </head>
 <body class="lang-de">
+
+<div class="intro-overlay" id="introOverlay" aria-hidden="true">
+  <div class="intro-word">
+    <span class="intro-letter" style="animation-delay:200ms">L</span>
+    <span class="intro-letter" style="animation-delay:290ms">u</span>
+    <span class="intro-letter" style="animation-delay:380ms">c</span>
+    <span class="intro-letter" style="animation-delay:470ms">i</span>
+    <span class="intro-letter" style="animation-delay:560ms">d</span>
+    <span class="intro-star">*</span>
+  </div>
+  <div class="intro-line"></div>
+  <div class="intro-tagline">Cleaning Services</div>
+</div>
+<script>
+  (function () {
+    var o = document.getElementById("introOverlay");
+    if (!o) return;
+    if (sessionStorage.getItem("lucid-intro-seen")) { o.remove(); return; }
+    sessionStorage.setItem("lucid-intro-seen", "1");
+    setTimeout(function () { o.classList.add("intro-done"); }, 2000);
+    setTimeout(function () { o.remove(); }, 3500);
+  })();
+</script>
 
 <nav>
   <div class="logo-wrap">
