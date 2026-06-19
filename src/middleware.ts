@@ -12,8 +12,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  // Public, login-free on-site guide reached via QR code.
+  const isPublic = pathname.startsWith("/login") || pathname.startsWith("/sop");
+
   const isApp = host.startsWith("app.");
-  if (isApp && !pathname.startsWith("/login")) {
+  if (isApp && !isPublic) {
     let authenticated = false;
     try {
       const cookie = request.cookies.get(AUTH_COOKIE)?.value;
