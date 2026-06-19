@@ -38,7 +38,7 @@ export default async function SitesPage() {
       ) : (
         <div className="space-y-4">
           {sites.map((site) => (
-            <div key={site.id} className="border border-gold/20 bg-white p-6">
+            <div key={site.id} className="rounded-lg border border-gold/20 bg-white p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   {site.color && (

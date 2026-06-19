@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PropertyForm } from "@/components/forms/property-form";
 
-export default async function EditPropertyPage({ params }: { params: { id: string } }) {
+export default async function EditPropertyPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const [property, customers] = await Promise.all([
     prisma.property.findUnique({ where: { id: params.id } }),
     prisma.customer.findMany({

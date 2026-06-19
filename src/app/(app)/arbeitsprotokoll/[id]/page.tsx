@@ -12,7 +12,8 @@ function formatDate(date: Date): string {
 
 const WEEKDAY_NAMES = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 
-export default async function WorkLogDetailPage({ params }: { params: { id: string } }) {
+export default async function WorkLogDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const workLog = await prisma.workLog.findUnique({
     where: { id: params.id },
     include: {
@@ -79,7 +80,7 @@ export default async function WorkLogDetailPage({ params }: { params: { id: stri
       </div>
 
       {/* Fortschritt + Mitarbeiter-Auswahl */}
-      <div className="border border-gold/20 bg-white p-4">
+      <div className="rounded-lg border border-gold/20 bg-white p-4">
         <div className="flex items-center gap-4">
           <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/5">
             <div

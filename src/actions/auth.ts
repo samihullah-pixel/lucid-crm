@@ -12,7 +12,7 @@ export async function login(formData: FormData) {
   }
 
   const token = await computeAuthToken(process.env.CRM_AUTH_SECRET || "");
-  cookies().set(AUTH_COOKIE, token, {
+  (await cookies()).set(AUTH_COOKIE, token, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
@@ -24,6 +24,6 @@ export async function login(formData: FormData) {
 }
 
 export async function logout() {
-  cookies().delete(AUTH_COOKIE);
+  (await cookies()).delete(AUTH_COOKIE);
   redirect("/login");
 }

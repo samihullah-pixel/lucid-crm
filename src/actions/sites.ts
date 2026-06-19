@@ -22,7 +22,7 @@ export async function createSite(formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/sites");
+  redirect("/sites?flash=" + encodeURIComponent("Standort angelegt"));
 }
 
 export async function updateSite(id: string, formData: FormData) {
@@ -40,7 +40,7 @@ export async function updateSite(id: string, formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/sites");
+  redirect("/sites?flash=" + encodeURIComponent("Standort gespeichert"));
 }
 
 export async function deleteSite(id: string) {

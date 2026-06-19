@@ -5,7 +5,8 @@ import { updateInspectionTemplateMeta } from "@/actions/inspection-templates";
 import { InspectionTemplateEditor } from "@/components/forms/inspection-template-editor";
 import { DeleteTemplateButton } from "@/components/forms/delete-template-button";
 
-export default async function EditInspectionTemplatePage({ params }: { params: { id: string } }) {
+export default async function EditInspectionTemplatePage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const [template, properties] = await Promise.all([
     prisma.inspectionTemplate.findUnique({
       where: { id: params.id },

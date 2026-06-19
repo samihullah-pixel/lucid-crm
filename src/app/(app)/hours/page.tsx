@@ -2,11 +2,12 @@ import { prisma } from "@/lib/prisma";
 
 const MONTH_NAMES = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
 
-export default async function HoursPage({
-  searchParams,
-}: {
-  searchParams: { year?: string; month?: string };
-}) {
+export default async function HoursPage(
+  props: {
+    searchParams: Promise<{ year?: string; month?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const now = new Date();
   const year = Number(searchParams.year ?? now.getFullYear());
   const month = Number(searchParams.month ?? now.getMonth() + 1);
@@ -62,25 +63,25 @@ export default async function HoursPage({
       </div>
 
       {rows.length === 0 ? (
-        <div className="border border-gold/20 bg-white p-6">
+        <div className="rounded-lg border border-gold/20 bg-white p-6">
           <p className="font-sans text-sm text-grey">Keine Einsätze in diesem Monat.</p>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <div className="border border-gold/20 bg-white p-4">
+            <div className="rounded-lg border border-gold/20 bg-white p-4">
               <p className="font-sans text-sm font-light text-grey">Gesamtstunden</p>
               <p className="mt-2 font-serif text-2xl font-light">{totalHours.toFixed(1)} h</p>
             </div>
-            <div className="border border-gold/20 bg-white p-4">
+            <div className="rounded-lg border border-gold/20 bg-white p-4">
               <p className="font-sans text-sm font-light text-grey">Einsätze gesamt</p>
               <p className="mt-2 font-serif text-2xl font-light">{totalJobs}</p>
             </div>
-            <div className="border border-gold/20 bg-white p-4">
+            <div className="rounded-lg border border-gold/20 bg-white p-4">
               <p className="font-sans text-sm font-light text-grey">Mitarbeiter aktiv</p>
               <p className="mt-2 font-serif text-2xl font-light">{rows.filter(r => r.hours > 0).length}</p>
             </div>
-            <div className="border border-gold/20 bg-white p-4">
+            <div className="rounded-lg border border-gold/20 bg-white p-4">
               <p className="font-sans text-sm font-light text-grey">Ø Stunden/Einsatz</p>
               <p className="mt-2 font-serif text-2xl font-light">{totalJobs > 0 ? (totalHours / totalJobs).toFixed(1) : "—"} h</p>
             </div>

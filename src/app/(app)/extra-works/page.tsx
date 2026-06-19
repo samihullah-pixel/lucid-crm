@@ -21,7 +21,7 @@ export default async function ExtraWorksPage() {
           Neue Zusatzarbeit
         </Link>
       </div>
-      <div className="border border-gold/20 bg-white p-6">
+      <div className="rounded-lg border border-gold/20 bg-white p-6">
         {extraWorks.length === 0 ? (
           <p className="font-sans text-sm font-light text-grey">Noch keine Zusatzarbeiten vorhanden.</p>
         ) : (

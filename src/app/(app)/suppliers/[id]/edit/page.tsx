@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { updateSupplier, createProduct, deleteProduct } from "@/actions/suppliers";
 import { DeleteButton } from "@/components/ui/delete-button";
 
-export default async function EditSupplierPage({ params }: { params: { id: string } }) {
+export default async function EditSupplierPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const supplier = await prisma.supplier.findUnique({
     where: { id: params.id },
     include: { products: { orderBy: { name: "asc" } } },
@@ -52,7 +53,7 @@ export default async function EditSupplierPage({ params }: { params: { id: strin
         ) : (
           <table className="w-full text-left text-sm mb-4">
             <thead>
-              <tr className="border-b border-black/10 text-[11px] uppercase tracking-wide text-grey">
+              <tr className="border-b border-black/10 text-[10px] uppercase tracking-[2px] text-grey">
                 <th className="py-2 pr-4">Name</th>
                 <th className="py-2 pr-4">Einheit</th>
                 <th className="py-2 pr-4">Preis/Einheit</th>

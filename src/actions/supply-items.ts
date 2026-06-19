@@ -21,7 +21,7 @@ export async function createCustomerSupplyItem(formData: FormData) {
     },
   });
   revalidatePath(`/customers/${customerId}/supply`);
-  redirect(`/customers/${customerId}/supply`);
+  redirect(`/customers/${customerId}/supply?flash=` + encodeURIComponent("Position hinzugefügt"));
 }
 
 export async function deleteCustomerSupplyItem(id: string, customerId: string) {

@@ -15,7 +15,8 @@ function getKW(date: Date): number {
   return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
-export default async function ProtocolPage({ params }: { params: { id: string } }) {
+export default async function ProtocolPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const protocol = await prisma.inspectionProtocol.findUnique({
     where: { id: params.id },
     include: {
@@ -83,7 +84,7 @@ export default async function ProtocolPage({ params }: { params: { id: string } 
         </div>
       </div>
 
-      <div className="border border-gold/20 bg-white p-4">
+      <div className="rounded-lg border border-gold/20 bg-white p-4">
         <div className="flex items-center gap-4">
           <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/5">
             <div
@@ -151,7 +152,7 @@ export default async function ProtocolPage({ params }: { params: { id: string } 
       </div>
 
       {!isComplete && (
-        <div className="border border-gold/20 bg-white p-6">
+        <div className="rounded-lg border border-gold/20 bg-white p-6">
           <h2 className="mb-4 font-serif text-lg font-light text-black">
             Rundgang abschliessen
           </h2>

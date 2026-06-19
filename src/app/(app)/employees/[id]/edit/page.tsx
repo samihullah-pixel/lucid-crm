@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { EmployeeForm } from "@/components/forms/employee-form";
 
-export default async function EditEmployeePage({ params }: { params: { id: string } }) {
+export default async function EditEmployeePage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const employee = await prisma.employee.findUnique({ where: { id: params.id } });
   if (!employee) notFound();
 

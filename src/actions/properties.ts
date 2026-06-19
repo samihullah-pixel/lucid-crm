@@ -35,7 +35,7 @@ export async function createProperty(formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/properties");
+  redirect("/properties?flash=" + encodeURIComponent("Objekt angelegt"));
 }
 
 export async function updateProperty(id: string, formData: FormData) {
@@ -45,7 +45,7 @@ export async function updateProperty(id: string, formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/properties");
+  redirect("/properties?flash=" + encodeURIComponent("Objekt gespeichert"));
 }
 
 export async function deleteProperty(id: string) {

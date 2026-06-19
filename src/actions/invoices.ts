@@ -67,7 +67,7 @@ export async function createInvoice(formData: FormData) {
   }
 
   revalidatePath("/invoices");
-  redirect("/invoices");
+  redirect("/invoices?flash=" + encodeURIComponent("Rechnung erstellt"));
 }
 
 export async function deleteInvoice(id: string) {

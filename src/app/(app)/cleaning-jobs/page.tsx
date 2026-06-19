@@ -31,14 +31,14 @@ export default async function CleaningJobsPage() {
           </Link>
         </div>
       </div>
-      <div className="border border-gold/20 bg-white p-6">
+      <div className="rounded-lg border border-gold/20 bg-white p-6">
         {jobs.length === 0 ? (
           <p className="font-sans text-sm font-light text-grey">Noch keine Einsätze vorhanden.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] text-left text-sm">
               <thead>
-                <tr className="border-b border-black/10 text-[11px] uppercase tracking-wide text-grey">
+                <tr className="border-b border-black/10 text-[10px] uppercase tracking-[2px] text-grey">
                   <th className="py-2 pr-4">Datum</th>
                   <th className="py-2 pr-4">Kunde</th>
                   <th className="py-2 pr-4">Objekt</th>
@@ -53,7 +53,7 @@ export default async function CleaningJobsPage() {
                 {jobs.map((j) => {
                   const del = deleteCleaningJob.bind(null, j.id);
                   return (
-                    <tr key={j.id} className="border-b border-black/10 last:border-0 hover:bg-light/40">
+                    <tr key={j.id} className="border-b border-black/5 last:border-0 transition-colors hover:bg-light/60">
                       <td className="py-2 pr-4">{j.date.toLocaleDateString("de-DE")}</td>
                       <td className="py-2 pr-4">{j.customer.companyName}</td>
                       <td className="py-2 pr-4">{j.property.name}</td>

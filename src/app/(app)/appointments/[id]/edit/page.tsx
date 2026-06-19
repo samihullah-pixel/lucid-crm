@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { AppointmentForm } from "@/components/forms/appointment-form";
 
-export default async function EditAppointmentPage({ params }: { params: { id: string } }) {
+export default async function EditAppointmentPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const [appointment, properties, employees] = await Promise.all([
     prisma.appointment.findUnique({ where: { id: params.id } }),
     prisma.property.findMany({
