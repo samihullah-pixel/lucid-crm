@@ -28,6 +28,8 @@ import {
   assignProcedureToSite,
   removeSiteAssignment,
 } from "@/actions/procedures";
+import { translateProcedure } from "@/actions/translate";
+import { Languages } from "lucide-react";
 
 let keySeq = 0;
 const nextKey = () => `k${keySeq++}`;
@@ -331,13 +333,30 @@ export function ProcedureBuilder({
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-white/95 backdrop-blur md:left-64">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <span className="font-sans text-xs text-grey">{steps.length} Schritte · {equipment.length} Equipment</span>
-          <button
-            onClick={save}
-            disabled={pending}
-            className="flex items-center gap-2 rounded-full bg-gradient-to-r from-gold-dark via-gold-light to-gold px-6 py-2.5 font-sans text-[11px] uppercase tracking-[3px] text-black disabled:opacity-50"
-          >
-            <Save className="h-4 w-4" /> {pending ? "Speichert…" : "Speichern"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() =>
+                startTransition(async () => {
+                  toast.loading("Übersetze nach EN & ES…", { id: "tr" });
+                  const r = await translateProcedure(procedure.id);
+                  if (r.ok) toast.success("Übersetzung erstellt (EN/ES)", { id: "tr" });
+                  else toast.error(r.error, { id: "tr" });
+                })
+              }
+              disabled={pending}
+              className="flex items-center gap-2 rounded-full border border-gold/40 px-5 py-2.5 font-sans text-[11px] uppercase tracking-[2px] text-gold-dark hover:bg-gold/5 disabled:opacity-50"
+              title="Vor dem Übersetzen speichern"
+            >
+              <Languages className="h-4 w-4" /> KI-Übersetzen
+            </button>
+            <button
+              onClick={save}
+              disabled={pending}
+              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-gold-dark via-gold-light to-gold px-6 py-2.5 font-sans text-[11px] uppercase tracking-[3px] text-black disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" /> {pending ? "Speichert…" : "Speichern"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
