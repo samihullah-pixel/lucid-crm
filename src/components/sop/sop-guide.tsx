@@ -13,6 +13,7 @@ import {
   Lightbulb,
   Phone,
   MapPin,
+  WifiOff,
 } from "lucide-react";
 import type { Guide } from "@/lib/sop";
 
@@ -38,6 +39,7 @@ const UI = {
     done: "Fertig",
     call: "Leitstelle anrufen",
     noLogin: "Kein Login nötig",
+    offlineReady: "Einmal geladen — funktioniert auch ohne Empfang",
     water: "Wasser",
     accessLabel: "Zugang",
     needToday: "Das brauchst du heute",
@@ -63,6 +65,7 @@ const UI = {
     done: "Done",
     call: "Call control room",
     noLogin: "No login needed",
+    offlineReady: "Loaded once — works even without signal",
     water: "Water",
     accessLabel: "Access",
     needToday: "What you need today",
@@ -88,6 +91,7 @@ const UI = {
     done: "Listo",
     call: "Llamar a la central",
     noLogin: "Sin inicio de sesión",
+    offlineReady: "Cargado una vez — funciona sin cobertura",
     water: "Agua",
     accessLabel: "Acceso",
     needToday: "Lo que necesitas hoy",
@@ -336,6 +340,11 @@ export function SopGuide({ guide }: { guide: Guide }) {
           emergency
           onClick={() => setView("emergency")}
         />
+      </div>
+
+      <div className="flex items-center justify-center gap-2 px-6 pb-8 pt-2 text-center font-sans text-[11px] font-light text-black/40">
+        <WifiOff className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.5} />
+        {t.offlineReady}
       </div>
     </div>
   );
