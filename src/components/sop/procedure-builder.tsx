@@ -223,7 +223,7 @@ export function ProcedureBuilder({
               <input
                 value={s.section}
                 onChange={(e) => updateStep(s.key, { section: e.target.value })}
-                placeholder="Abschnitt (z.B. Fahrerkabine)"
+                placeholder="Abschnitt (z.B. Eingangsbereich)"
                 className="ml-2 flex-1 rounded border border-black/10 px-2 py-1 font-sans text-xs text-grey focus:border-gold focus:outline-none"
               />
               <button onClick={() => moveStep(i, -1)} aria-label="Hoch" className="text-grey hover:text-black"><ChevronUp className="h-4 w-4" /></button>
