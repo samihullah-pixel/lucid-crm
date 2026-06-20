@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { StepMediaType } from "@prisma/client";
+import { getTemplate } from "@/lib/sop-templates";
 
 export async function createProcedure(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
@@ -12,6 +13,55 @@ export async function createProcedure(formData: FormData) {
   const proc = await prisma.procedure.create({ data: { name, description } });
   revalidatePath("/sop-procedures");
   redirect(`/sop-procedures/${proc.id}/edit?flash=` + encodeURIComponent("Anleitung angelegt"));
+}
+
+export async function createProcedureFromTemplate(formData: FormData) {
+  const templateId = String(formData.get("templateId") ?? "");
+  const tpl = getTemplate(templateId);
+  if (!tpl) redirect("/sop-procedures/new");
+
+  const proc = await prisma.procedure.create({
+    data: {
+      name: tpl.name,
+      description: tpl.description,
+      serviceType: tpl.serviceType,
+      steps: {
+        create: tpl.steps.map((s, i) => ({
+          section: s.section ?? null,
+          title: s.title,
+          body: s.body ?? null,
+          tip: s.tip ?? null,
+          warning: s.warning ?? null,
+          requiresCheck: s.requiresCheck ?? false,
+          order: i,
+        })),
+      },
+    },
+  });
+
+  // Equipment anlegen (vorhandene per Name wiederverwenden) und verknüpfen.
+  for (let i = 0; i < tpl.equipment.length; i++) {
+    const e = tpl.equipment[i];
+    const item =
+      (await prisma.equipmentItem.findFirst({ where: { name: e.name } })) ??
+      (await prisma.equipmentItem.create({
+        data: { name: e.name, defaultLocation: e.defaultLocation ?? null },
+      }));
+    await prisma.procedureEquipment.create({
+      data: {
+        procedureId: proc.id,
+        equipmentId: item.id,
+        locationNote: e.defaultLocation ?? null,
+        order: i,
+      },
+    });
+  }
+
+  revalidatePath("/sop-procedures");
+  redirect(
+    `/sop-procedures/${proc.id}/edit?flash=` +
+      encodeURIComponent(`Anleitung aus Vorlage „${tpl.label}" erstellt`)
+  );
 }
 
 export async function updateProcedureMeta(id: string, formData: FormData) {
