@@ -4,3 +4,7 @@ node_modules
 .DS_Store
 .claude/
 tsconfig.tsbuildinfo
+
+# Serwist (generierter Service Worker)
+public/sw.js
+public/swe-worker-*.js
