@@ -77,6 +77,13 @@ export async function deleteProcedure(id: string) {
   redirect("/sop-procedures?flash=" + encodeURIComponent("Anleitung gelöscht"));
 }
 
+export async function deleteProcedures(ids: string[]) {
+  const clean = ids.filter(Boolean);
+  if (clean.length === 0) return;
+  await prisma.procedure.deleteMany({ where: { id: { in: clean } } });
+  revalidatePath("/sop-procedures");
+}
+
 export async function createEquipmentItem(name: string, defaultLocation: string | null) {
   const item = await prisma.equipmentItem.create({
     data: { name: name.trim(), defaultLocation: defaultLocation?.trim() || null },
