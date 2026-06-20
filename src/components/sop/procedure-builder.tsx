@@ -28,8 +28,6 @@ import {
   assignProcedureToSite,
   removeSiteAssignment,
 } from "@/actions/procedures";
-import { translateProcedure } from "@/actions/translate";
-import { Languages } from "lucide-react";
 
 let keySeq = 0;
 const nextKey = () => `k${keySeq++}`;
@@ -334,22 +332,7 @@ export function ProcedureBuilder({
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <span className="font-sans text-xs text-grey">{steps.length} Schritte · {equipment.length} Equipment</span>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() =>
-                startTransition(async () => {
-                  toast.loading("Übersetze nach EN & ES…", { id: "tr" });
-                  const r = await translateProcedure(procedure.id);
-                  if (r.ok) toast.success("Übersetzung erstellt (EN/ES)", { id: "tr" });
-                  else toast.error(r.error, { id: "tr" });
-                })
-              }
-              disabled={pending}
-              className="flex items-center gap-2 rounded-full border border-gold/40 px-5 py-2.5 font-sans text-[11px] uppercase tracking-[2px] text-gold-dark hover:bg-gold/5 disabled:opacity-50"
-              title="Vor dem Übersetzen speichern"
-            >
-              <Languages className="h-4 w-4" /> KI-Übersetzen
-            </button>
-            <button
+<button
               onClick={save}
               disabled={pending}
               className="flex items-center gap-2 rounded-full bg-gradient-to-r from-gold-dark via-gold-light to-gold px-6 py-2.5 font-sans text-[11px] uppercase tracking-[3px] text-black disabled:opacity-50"
