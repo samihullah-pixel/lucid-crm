@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { deletePartner } from "@/actions/partners";
 import { DeleteButton } from "@/components/ui/delete-button";
 
+export const dynamic = "force-dynamic";
+
 export default async function PartnersPage() {
   const partners = await prisma.partner.findMany({
     orderBy: { name: "asc" },

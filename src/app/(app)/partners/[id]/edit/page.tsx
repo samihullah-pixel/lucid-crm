@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { updatePartner } from "@/actions/partners";
 
+export const dynamic = "force-dynamic";
+
 export default async function EditPartnerPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const partner = await prisma.partner.findUnique({ where: { id: params.id } });

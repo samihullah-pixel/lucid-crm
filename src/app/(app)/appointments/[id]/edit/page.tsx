@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { AppointmentForm } from "@/components/forms/appointment-form";
 import { acceptProposedDate, resendSubcontractRequest } from "@/actions/subcontract";
 
+export const dynamic = "force-dynamic";
+
 const statusLabels: Record<string, string> = {
   ANGEFRAGT: "Angefragt – wartet auf Partner",
   TERMIN_VORGESCHLAGEN: "Partner schlägt Alternativtermin vor",
