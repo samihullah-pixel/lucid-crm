@@ -11,10 +11,22 @@ const weekdayLabels: Record<number, string> = {
   7: "So",
 };
 
+const externalBadge: Record<string, { label: string; className: string }> = {
+  ANGEFRAGT: { label: "Extern · angefragt", className: "border-amber-300 bg-amber-50 text-amber-700" },
+  TERMIN_VORGESCHLAGEN: { label: "Extern · Terminvorschlag", className: "border-amber-300 bg-amber-50 text-amber-700" },
+  BESTAETIGT: { label: "Extern · bestätigt", className: "border-emerald-300 bg-emerald-50 text-emerald-700" },
+  ABGELEHNT: { label: "Extern · abgelehnt", className: "border-red-300 bg-red-50 text-red-700" },
+  STORNIERT: { label: "Extern · storniert", className: "border-grey/30 bg-light text-grey" },
+};
+
 export default async function AppointmentsPage() {
   const appointments = await prisma.appointment.findMany({
     orderBy: { createdAt: "desc" },
-    include: { property: { include: { customer: true } }, employee: true },
+    include: {
+      property: { include: { customer: true } },
+      employee: true,
+      subcontractRequests: { orderBy: { createdAt: "desc" }, take: 1 },
+    },
   });
 
   return (
@@ -52,7 +64,18 @@ export default async function AppointmentsPage() {
             <tbody>
               {appointments.map((a) => (
                 <tr key={a.id} className="border-b border-black/10 last:border-0">
-                  <td className="py-2 pr-4">{a.title}</td>
+                  <td className="py-2 pr-4">
+                    {a.title}
+                    {a.subcontractRequests[0] && (
+                      <span
+                        className={`ml-2 inline-block rounded-full border px-2 py-0.5 align-middle text-[9px] font-medium uppercase tracking-wide ${
+                          externalBadge[a.subcontractRequests[0].status]?.className ?? ""
+                        }`}
+                      >
+                        {externalBadge[a.subcontractRequests[0].status]?.label ?? "Extern"}
+                      </span>
+                    )}
+                  </td>
                   <td className="py-2 pr-4">
                     {a.property.name} ({a.property.customer.companyName})
                   </td>

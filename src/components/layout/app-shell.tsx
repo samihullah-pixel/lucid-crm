@@ -21,6 +21,7 @@ import {
   CalendarClock,
   Search,
   BookOpen,
+  Handshake,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/actions/auth";
@@ -71,6 +72,7 @@ const navigation: NavGroup[] = [
       { href: "/hours", label: "Stunden", icon: Clock },
       { href: "/supply-orders", label: "Bestellungen", icon: ShoppingCart },
       { href: "/suppliers", label: "Lieferanten", icon: Truck },
+      { href: "/partners", label: "Partner", icon: Handshake },
     ],
   },
 ];

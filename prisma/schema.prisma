@@ -285,6 +285,7 @@ model Property {
   invoices             Invoice[]
   materialAgreements   MaterialAgreement[]
   inspectionTemplates  InspectionTemplate[]
+  subcontractRequests  SubcontractRequest[]
   @@index([customerId])
 }
 model ServiceContract {
@@ -331,6 +332,7 @@ model Appointment {
   serviceContract    ServiceContract?    @relation(fields: [serviceContractId], references: [id], onDelete: SetNull)
   employee           Employee?           @relation(fields: [employeeId], references: [id], onDelete: SetNull)
   cleaningJobs       CleaningJob[]
+  subcontractRequests SubcontractRequest[]
   @@index([propertyId])
   @@index([serviceContractId])
   @@index([employeeId])
@@ -682,4 +684,53 @@ model WorkLogEntry {
   sortOrder  Int       @default(0)
   @@index([workLogId])
   @@index([employeeId])
+}
+
+enum SubcontractStatus {
+  ANGEFRAGT
+  TERMIN_VORGESCHLAGEN
+  BESTAETIGT
+  ABGELEHNT
+  STORNIERT
+}
+
+model Partner {
+  id            String               @id @default(cuid())
+  name          String
+  contactPerson String?
+  email         String
+  phone         String?
+  serviceArea   String?
+  notes         String?
+  isActive      Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  requests      SubcontractRequest[]
+}
+
+model SubcontractRequest {
+  id                 String            @id @default(cuid())
+  appointmentId      String?
+  partnerId          String
+  propertyId         String
+  serviceDescription String
+  requestedDate      DateTime
+  proposedDate       DateTime?
+  status             SubcontractStatus @default(ANGEFRAGT)
+  confirmToken       String            @unique
+  partnerPrice       Decimal           @db.Decimal(10, 2)
+  partnerNote        String?
+  customerPrice      Decimal?          @db.Decimal(10, 2)
+  requestedAt        DateTime          @default(now())
+  respondedAt        DateTime?
+  customerNotifiedAt DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  appointment        Appointment?      @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  partner            Partner           @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  property           Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  @@index([partnerId])
+  @@index([propertyId])
+  @@index([appointmentId])
+  @@index([status])
 }

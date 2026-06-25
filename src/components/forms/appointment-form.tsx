@@ -1,7 +1,12 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
 import { createAppointment, updateAppointment } from "@/actions/appointments";
 
 type Property = { id: string; name: string; customer: { companyName: string } };
 type Employee = { id: string; firstName: string; lastName: string };
+type Partner = { id: string; name: string };
 
 type AppointmentInitialValues = {
   id: string;
@@ -44,15 +49,18 @@ function toDateInputValue(date: Date | null): string {
 export function AppointmentForm({
   properties,
   employees,
+  partners = [],
   initialValues,
 }: {
   properties: Property[];
   employees: Employee[];
+  partners?: Partner[];
   initialValues?: AppointmentInitialValues;
 }) {
   const action = initialValues
     ? updateAppointment.bind(null, initialValues.id)
     : createAppointment;
+  const [externalService, setExternalService] = useState(false);
 
   return (
     <form action={action} className="border border-gold/20 bg-white p-6">
@@ -183,6 +191,89 @@ export function AppointmentForm({
           />
         </div>
       </div>
+      {!initialValues && (
+        <div className="mt-6 border-t border-gold/20 pt-6">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              name="externalService"
+              checked={externalService}
+              onChange={(e) => setExternalService(e.target.checked)}
+            />
+            <span className="font-sans text-sm font-medium text-black">
+              Diese Leistung wird extern ausgeführt (Subunternehmer)
+            </span>
+          </label>
+
+          {externalService && (
+            <div className="mt-4 grid grid-cols-1 gap-4 rounded border border-gold/30 bg-light/40 p-4 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Partner</label>
+                {partners.length === 0 ? (
+                  <p className="font-sans text-sm font-light text-grey">
+                    Noch kein Partner angelegt.{" "}
+                    <Link href="/partners/new" className="text-gold-dark underline hover:text-gold">
+                      Neuen Partner anlegen
+                    </Link>
+                  </p>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <select
+                      name="partnerId"
+                      required={externalService}
+                      className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+                    >
+                      <option value="">Bitte wählen</option>
+                      {partners.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                    <Link href="/partners/new" className="whitespace-nowrap font-sans text-[11px] uppercase tracking-wide text-gold-dark hover:text-gold">
+                      + Neu
+                    </Link>
+                  </div>
+                )}
+              </div>
+              <div className="md:col-span-2">
+                <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Leistungsbeschreibung (für Partner)</label>
+                <input
+                  name="serviceDescription"
+                  placeholder="z.B. Glasreinigung Fassade, 2. OG"
+                  className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Partnerpreis (EUR, fest)</label>
+                <input
+                  name="partnerPrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  required={externalService}
+                  className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Kundenpreis (EUR, optional)</label>
+                <input
+                  name="customerPrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+                />
+              </div>
+              <p className="md:col-span-2 font-sans text-xs font-light text-grey">
+                Der Partnerpreis ist fest und intern — er wird dem Kunden <strong>nie</strong> angezeigt.
+                Beim Speichern geht automatisch eine Terminanfrage an den Partner.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="mt-6">
         <button
           type="submit"

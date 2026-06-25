@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { createSubcontractForAppointment } from "@/actions/subcontract";
 
 function buildAppointmentData(formData: FormData) {
   const weekdays = formData.getAll("weekdays").map(Number).filter((n) => !isNaN(n));
@@ -27,12 +28,32 @@ function buildAppointmentData(formData: FormData) {
 }
 
 export async function createAppointment(formData: FormData) {
-  await prisma.appointment.create({
-    data: buildAppointmentData(formData),
-  });
+  const data = buildAppointmentData(formData);
+  const appointment = await prisma.appointment.create({ data });
+
+  let flash = "Termin angelegt";
+
+  // Fremdleistung / Subunternehmer: Anfrage an externen Partner auslösen.
+  if (formData.get("externalService") === "on") {
+    const partnerId = String(formData.get("partnerId") ?? "");
+    const partnerPriceRaw = String(formData.get("partnerPrice") ?? "");
+    const requestedDate = data.date ?? data.startDate ?? new Date();
+    if (partnerId && partnerPriceRaw) {
+      await createSubcontractForAppointment({
+        appointmentId: appointment.id,
+        partnerId,
+        propertyId: data.propertyId,
+        serviceDescription: String(formData.get("serviceDescription") ?? "") || data.title,
+        requestedDate,
+        partnerPrice: Number(partnerPriceRaw),
+        customerPrice: formData.get("customerPrice") ? Number(formData.get("customerPrice")) : null,
+      });
+      flash = "Termin angelegt & Anfrage an Partner gesendet";
+    }
+  }
 
   revalidatePath("/appointments");
-  redirect("/appointments?flash=" + encodeURIComponent("Termin angelegt"));
+  redirect("/appointments?flash=" + encodeURIComponent(flash));
 }
 
 export async function updateAppointment(id: string, formData: FormData) {
