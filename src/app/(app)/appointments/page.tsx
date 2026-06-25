@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 const weekdayLabels: Record<number, string> = {
   1: "Mo",
   2: "Di",

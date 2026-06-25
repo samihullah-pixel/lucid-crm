@@ -1,6 +1,8 @@
 import { AppointmentForm } from "@/components/forms/appointment-form";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewAppointmentPage() {
   const [properties, employees, partners] = await Promise.all([
     prisma.property.findMany({
