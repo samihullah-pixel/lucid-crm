@@ -7,9 +7,15 @@ export async function middleware(request: NextRequest) {
 
   const isApex = host === "lucid-cleaning.de" || host === "www.lucid-cleaning.de";
   if (isApex) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/marketing/index.html";
-    return NextResponse.rewrite(url);
+    // Nur die Startseite auf die Marketing-Seite umschreiben. Echte Dateien
+    // (Impressum, Datenschutz, Schriften, sonstige Assets) müssen direkt
+    // ausgeliefert werden, sonst sind die Rechtsseiten nicht erreichbar.
+    if (pathname === "/") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/marketing/index.html";
+      return NextResponse.rewrite(url);
+    }
+    return NextResponse.next();
   }
 
   // Public, login-free on-site guide reached via QR code.
