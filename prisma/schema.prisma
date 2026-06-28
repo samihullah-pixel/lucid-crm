@@ -83,6 +83,7 @@ model Employee {
   shiftAssignments    ShiftAssignment[]
   inspectionProtocols InspectionProtocol[]
   workLogEntries      WorkLogEntry[]
+  supplyOrders        SupplyOrder[]
 }
 
 model Site {
@@ -286,6 +287,7 @@ model Property {
   materialAgreements   MaterialAgreement[]
   inspectionTemplates  InspectionTemplate[]
   subcontractRequests  SubcontractRequest[]
+  supplyOrders         SupplyOrder[]
   @@index([customerId])
 }
 model ServiceContract {
@@ -550,16 +552,20 @@ model InspectionItem {
 }
 
 model Supplier {
-  id        String        @id @default(cuid())
-  name      String
-  email     String
-  phone     String?
-  notes     String?
-  isActive  Boolean       @default(true)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  products  Product[]
-  orders    SupplyOrder[]
+  id             String        @id @default(cuid())
+  name           String
+  email          String
+  phone          String?
+  // Unsere eigene Kundennummer BEI diesem Lieferanten – gehört in jede Bestell-Mail.
+  customerNumber String?
+  // Optionale Standard-CC-Adresse, die beim Bestellen vorausgefüllt wird (z.B. Buchhaltung).
+  defaultCc      String?
+  notes          String?
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  products       Product[]
+  orders         SupplyOrder[]
 }
 
 model Product {
@@ -567,6 +573,7 @@ model Product {
   name        String
   unit        String?
   unitPrice   Decimal              @db.Decimal(10, 2)
+  imageUrl    String?
   supplierId  String
   supplier    Supplier             @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   isActive    Boolean              @default(true)
@@ -601,16 +608,34 @@ enum SupplyOrderStatus {
   CANCELLED
 }
 
+// AUTO  = vom Cron (Verbrauchsplanung) ausgelöst.
+// MANUAL = von einem Mitarbeiter über die App selbst ausgelöst.
+enum SupplyOrderSource {
+  AUTO
+  MANUAL
+}
+
 model SupplyOrder {
   id         String            @id @default(cuid())
   supplierId String
   supplier   Supplier          @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   status     SupplyOrderStatus @default(PENDING)
+  source     SupplyOrderSource @default(AUTO)
+  // Lieferobjekt der manuellen Bestellung (bestimmt Lieferadresse + Kunde).
+  propertyId String?
+  property   Property?         @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  // Mitarbeiter, der die Bestellung ausgelöst hat (Nachvollziehbarkeit).
+  employeeId String?
+  employee   Employee?         @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  ccEmail    String?
+  note       String?
   sentAt     DateTime?
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
   items      SupplyOrderItem[]
   @@index([supplierId])
+  @@index([propertyId])
+  @@index([employeeId])
 }
 
 model SupplyOrderItem {

@@ -20,6 +20,7 @@ export function appBaseUrl(): string {
 
 type SendArgs = {
   to: string | string[];
+  cc?: string | string[];
   subject: string;
   text: string;
   html?: string;
@@ -31,12 +32,13 @@ type SendArgs = {
  * Ergebnis-Objekt zurück, damit der aufrufende Flow (z.B. Termin anlegen)
  * nicht komplett scheitert, wenn nur der Mailversand klemmt.
  */
-export async function sendEmail({ to, subject, text, html, replyTo }: SendArgs) {
+export async function sendEmail({ to, cc, subject, text, html, replyTo }: SendArgs) {
   try {
     const resend = getResend();
     await resend.emails.send({
       from: FROM,
       to,
+      ...(cc ? { cc } : {}),
       subject,
       text,
       ...(html ? { html } : {}),

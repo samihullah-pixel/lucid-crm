@@ -487,6 +487,207 @@ export const SOP_TEMPLATES: SopTemplate[] = [
       { name: "Müllbeutel & Glas-/Pfandbehälter" },
     ],
   },
+  {
+    id: "grundreinigung-buerokomplex",
+    label: "Grundreinigung Bürokomplex",
+    icon: "🪣",
+    serviceType: "GRUNDREINIGUNG",
+    name: "Grundreinigung Bürokomplex",
+    description:
+      "Tiefenreinigung · Duschen/Umkleiden, WC, Küche, Flächen · mit Packliste & Profi-Tricks",
+    steps: [
+      // Bereich 1 — Duschkabinen & Umkleiden
+      {
+        section: "Duschkabinen & Umkleiden (LKW-Fahrer)",
+        title: "Bereich vorbereiten & Profi-Tricks",
+        body: "Härtester Bereich: Kalk, Seifenreste, Hautfett, Schimmel in Fugen. Saurer Sanitärreiniger 10 Min vorsprühen.",
+        tip: "Pre-spray & walk away: Dusche 2 vorschrubben während Dusche 1 einwirkt · Duschköpfe abschrauben und über Nacht in Entkalker legen · Schaumdüse nutzen – Reiniger haftet senkrecht an Fliesen/Glas · Trockenwischen ist Pflicht: Kalkwasser setzt sich beim Antrocknen sofort neu ab",
+        warning:
+          "Sauer und Chlor NIE mischen → Chlorgas. Dazwischen immer mit Wasser spülen. Bei Naturstein keine sauren Reiniger.",
+      },
+      {
+        section: "Duschkabinen & Umkleiden (LKW-Fahrer)",
+        title: "Fliesen, Armaturen, Glas mit saurem Kalklöser vorsprühen (10 Min einwirken)",
+        requiresCheck: true,
+      },
+      {
+        section: "Duschkabinen & Umkleiden (LKW-Fahrer)",
+        title: "Schimmel in Silikonfugen mit Aktivchlor behandeln, Fenster öffnen",
+        requiresCheck: true,
+      },
+      {
+        section: "Duschkabinen & Umkleiden (LKW-Fahrer)",
+        title: "Silikon- und Fliesenfugen mit Fugenbürste reinigen",
+        requiresCheck: true,
+      },
+      {
+        section: "Duschkabinen & Umkleiden (LKW-Fahrer)",
+        title: "Duschköpfe abschrauben, über Nacht in Entkalker legen",
+        requiresCheck: true,
+      },
+      {
+        section: "Duschkabinen & Umkleiden (LKW-Fahrer)",
+        title: "Abläufe/Siphons öffnen, Haare/Schlamm entfernen, desinfizieren",
+        requiresCheck: true,
+      },
+      {
+        section: "Duschkabinen & Umkleiden (LKW-Fahrer)",
+        title: "Spinde innen auswischen, Bänke entfetten",
+        requiresCheck: true,
+      },
+      {
+        section: "Duschkabinen & Umkleiden (LKW-Fahrer)",
+        title: "Glasabtrennungen abziehen, streifenfrei trockenwischen",
+        requiresCheck: true,
+      },
+      {
+        section: "Duschkabinen & Umkleiden (LKW-Fahrer)",
+        title: "Boden zuletzt wischen und trocknen (Kalk setzt sich sonst neu ab)",
+        requiresCheck: true,
+      },
+      // Bereich 2 — Toiletten
+      {
+        section: "Toiletten",
+        title: "Bereich vorbereiten & Profi-Tricks",
+        body: "Von oben nach unten arbeiten. Roter Farbcode für WC-Becken.",
+        tip: "Pre-spray alle Becken/Urinale gleichzeitig, dann von oben nach unten arbeiten · Urinstein nur mit Bimsstab auf Keramik – nie auf Acryl · Farbcode strikt: rotes Tuch verlässt nie den WC-Bereich · Versteckte Spritzer an Trennwand-Unterkanten und Fußleisten nicht vergessen",
+      },
+      {
+        section: "Toiletten",
+        title: "WC-Becken innen + unter Rand mit saurem Reiniger vorsprühen",
+        requiresCheck: true,
+      },
+      {
+        section: "Toiletten",
+        title: "Urinale, Waschbecken, WC außen mit Sanitärreiniger einsprühen",
+        requiresCheck: true,
+      },
+      {
+        section: "Toiletten",
+        title: "Spülkästen, Rohre, Ablagen reinigen",
+        requiresCheck: true,
+      },
+      {
+        section: "Toiletten",
+        title: "Armaturen entkalken und polieren",
+        requiresCheck: true,
+      },
+      {
+        section: "Toiletten",
+        title: "WC-Becken innen mit Bürste, Urinstein entfernen (ggf. Bimsstab)",
+        requiresCheck: true,
+      },
+      {
+        section: "Toiletten",
+        title: "Detailpunkte: Scharniere, Spülknopf, Türklinken, Lichtschalter",
+        requiresCheck: true,
+      },
+      {
+        section: "Toiletten",
+        title: "Trennwände unten + Fußleisten (Urin-/Spritzer) reinigen",
+        requiresCheck: true,
+      },
+      {
+        section: "Toiletten",
+        title: "Boden zuletzt wischen und desinfizieren",
+        requiresCheck: true,
+      },
+      // Bereich 3 — Küchen
+      {
+        section: "Küchen",
+        title: "Bereich vorbereiten & Profi-Tricks",
+        body: "Alkalischen Entfetter zuerst auftragen und einwirken lassen.",
+        tip: "Entfetter aufsprühen und einwirken lassen, parallel Filter ausbauen · Dunstabzugsfilter in Spülmaschine oder heißem Wasser + Entfetter einweichen · Edelstahl immer in Schliffrichtung wischen – sonst Streifen · Boden zuletzt, auch unter und hinter Geräten",
+      },
+      {
+        section: "Küchen",
+        title: "Fronten, Fliesenspiegel, Dunstabzug, Herd mit Entfetter einsprühen",
+        requiresCheck: true,
+      },
+      {
+        section: "Küchen",
+        title: "Dunstabzugsfilter ausbauen, in heißem Wasser/Spülmaschine reinigen",
+        requiresCheck: true,
+      },
+      {
+        section: "Küchen",
+        title: "Kühlschrank und Mikrowelle innen reinigen",
+        requiresCheck: true,
+      },
+      {
+        section: "Küchen",
+        title: "Spüle und Armatur entkalken",
+        requiresCheck: true,
+      },
+      {
+        section: "Küchen",
+        title: "Mülleimer leeren und desinfizieren",
+        requiresCheck: true,
+      },
+      {
+        section: "Küchen",
+        title: "Boden zuletzt, Ecken und unter Geräten nicht vergessen",
+        requiresCheck: true,
+      },
+      // Bereich 4 — Tischfüße & allgemeine Flächen
+      {
+        section: "Tischfüße & allgemeine Flächen",
+        title: "Bereich vorbereiten & Profi-Tricks",
+        body: "Materialtest an unauffälliger Stelle wegen Lack/Pulverbeschichtung.",
+        tip: "Melaminschwamm nass auswringen – nicht auf glänzendem Lack scheuern (mattiert) · Materialtest an verdeckter Stelle vor großflächiger Anwendung · Tuch in 8 Flächen falten = 8 saubere Seiten pro Tuch · Nach dem Reinigen trockenpolieren für streifenfreies Finish",
+      },
+      {
+        section: "Tischfüße & allgemeine Flächen",
+        title: "Materialtest an verdeckter Stelle durchführen",
+        requiresCheck: true,
+      },
+      {
+        section: "Tischfüße & allgemeine Flächen",
+        title: "Schwarze Schuhabriebstriche mit Melaminschwamm entfernen",
+        requiresCheck: true,
+      },
+      {
+        section: "Tischfüße & allgemeine Flächen",
+        title: "Tischfüße mit Allzweckreiniger reinigen, trockenpolieren",
+        requiresCheck: true,
+      },
+      {
+        section: "Tischfüße & allgemeine Flächen",
+        title: "Edelstahl in Schliffrichtung wischen (streifenfrei)",
+        requiresCheck: true,
+      },
+      {
+        section: "Tischfüße & allgemeine Flächen",
+        title: "Fußleisten und Ecken im Bürobereich abwischen",
+        requiresCheck: true,
+      },
+    ],
+    // Packliste – vor Anfahrt auf den Wagen laden
+    equipment: [
+      { name: "Dampfreiniger Profi (6–8 bar) + Düsenset" },
+      { name: "Akku-Schrubbbürste (oscillating) + Bürstenaufsätze" },
+      { name: "Nass-Trockensauger + Aufsätze" },
+      { name: "Mikrofaser-Mopp-System mit Vortränkung (bucketless)" },
+      { name: "Glasabzieher Profi + Ersatzgummis" },
+      { name: "Fugenbürsten 3 Stärken + Detailbürsten" },
+      { name: "Bimsstab für Keramik" },
+      { name: "Melaminschwämme (Großgebinde)" },
+      { name: "Teleskop-Stiel mit Wechselköpfen" },
+      { name: "Sprühflaschen mit Schaumdüse" },
+      { name: "Sauer / Sanitär-Kalklöser" },
+      { name: "Alkalisch / Fettlöser-Grundreiniger" },
+      { name: "Aktivchlor / Schimmelentferner" },
+      { name: "Flächendesinfektion (VAH-gelistet)" },
+      { name: "Mikrofaser rot = WC" },
+      { name: "Mikrofaser gelb = Sanitär/Waschbecken" },
+      { name: "Mikrofaser grün = Küche" },
+      { name: "Mikrofaser blau = Allgemein/Büro" },
+      { name: "Nitrilhandschuhe + Schutzbrille" },
+      { name: "Knieschoner" },
+      { name: "Warnschilder 'Rutschgefahr'" },
+      { name: "Müllsäcke + Ersatzbeutel" },
+    ],
+  },
 ];
 
 export function getTemplate(id: string): SopTemplate | undefined {
