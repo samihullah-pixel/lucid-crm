@@ -1,6 +1,12 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { cancelSupplyOrder } from "@/actions/supply-items";
 import { DeleteButton } from "@/components/ui/delete-button";
+
+const SOURCE_LABEL: Record<string, string> = {
+  AUTO: "Automatisch",
+  MANUAL: "Manuell",
+};
 
 const STATUS_LABEL: Record<string, string> = {
   PENDING: "Ausstehend",
@@ -22,6 +28,8 @@ export default async function SupplyOrdersPage() {
     take: 100,
     include: {
       supplier: true,
+      property: true,
+      employee: true,
       items: {
         include: {
           customer: true,
@@ -36,9 +44,17 @@ export default async function SupplyOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-serif text-3xl font-light text-black">Bestellungen</h1>
-        <p className="font-sans text-sm font-light text-grey">Alle automatisch ausgelösten Lieferantenbestellungen.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-serif text-3xl font-light text-black">Bestellungen</h1>
+          <p className="font-sans text-sm font-light text-grey">Manuelle und automatisch ausgelöste Lieferantenbestellungen.</p>
+        </div>
+        <Link
+          href="/supply-orders/new"
+          className="rounded-full bg-gradient-to-r from-gold-dark via-gold-light to-gold px-5 py-2 font-sans text-[11px] uppercase tracking-[3px] text-black transition-shadow hover:shadow-[0_6px_24px_rgba(201,169,110,0.35)]"
+        >
+          + Neue Bestellung
+        </Link>
       </div>
 
       {failed.length > 0 && (
@@ -67,8 +83,18 @@ export default async function SupplyOrdersPage() {
                     <span className="ml-3 font-sans text-xs text-grey">
                       {new Date(order.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </span>
+                    {(order.property || order.employee) && (
+                      <span className="block font-sans text-xs text-grey mt-0.5">
+                        {order.property ? `Lieferadresse: ${order.property.name}` : ""}
+                        {order.property && order.employee ? " · " : ""}
+                        {order.employee ? `Bestellt von ${order.employee.firstName} ${order.employee.lastName}` : ""}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
+                    <span className="font-sans text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                      {SOURCE_LABEL[order.source] ?? order.source}
+                    </span>
                     <span className={`font-sans text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full ${STATUS_COLOR[order.status] ?? ""}`}>
                       {STATUS_LABEL[order.status] ?? order.status}
                     </span>

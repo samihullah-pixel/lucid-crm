@@ -10,6 +10,8 @@ export async function createSupplier(formData: FormData) {
       name: String(formData.get("name") ?? ""),
       email: String(formData.get("email") ?? ""),
       phone: String(formData.get("phone") ?? "") || null,
+      customerNumber: String(formData.get("customerNumber") ?? "") || null,
+      defaultCc: String(formData.get("defaultCc") ?? "") || null,
       notes: String(formData.get("notes") ?? "") || null,
     },
   });
@@ -24,6 +26,8 @@ export async function updateSupplier(id: string, formData: FormData) {
       name: String(formData.get("name") ?? ""),
       email: String(formData.get("email") ?? ""),
       phone: String(formData.get("phone") ?? "") || null,
+      customerNumber: String(formData.get("customerNumber") ?? "") || null,
+      defaultCc: String(formData.get("defaultCc") ?? "") || null,
       notes: String(formData.get("notes") ?? "") || null,
     },
   });
@@ -44,10 +48,20 @@ export async function createProduct(supplierId: string, formData: FormData) {
       name: String(formData.get("name") ?? ""),
       unit: String(formData.get("unit") ?? "") || null,
       unitPrice: Number(formData.get("unitPrice") ?? 0),
+      imageUrl: String(formData.get("imageUrl") ?? "") || null,
     },
   });
   revalidatePath("/suppliers");
   redirect(`/suppliers/${supplierId}/edit?flash=` + encodeURIComponent("Produkt angelegt"));
+}
+
+/** Foto eines bestehenden Artikels setzen oder entfernen (leerer String = entfernen). */
+export async function setProductImage(id: string, supplierId: string, imageUrl: string) {
+  await prisma.product.update({
+    where: { id },
+    data: { imageUrl: imageUrl || null },
+  });
+  revalidatePath(`/suppliers/${supplierId}/edit`);
 }
 
 export async function deleteProduct(id: string, supplierId: string) {
