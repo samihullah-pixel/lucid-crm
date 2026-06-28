@@ -21,6 +21,14 @@ export default function NewSupplierPage() {
           <input name="phone" className="w-full border border-black/20 px-3 py-2 font-sans text-sm" />
         </div>
         <div>
+          <label className="block font-sans text-[11px] uppercase tracking-wide text-grey mb-1">Unsere Kundennummer (beim Lieferanten)</label>
+          <input name="customerNumber" placeholder="erscheint in jeder Bestell-Mail" className="w-full border border-black/20 px-3 py-2 font-sans text-sm" />
+        </div>
+        <div>
+          <label className="block font-sans text-[11px] uppercase tracking-wide text-grey mb-1">Standard-CC (optional)</label>
+          <input name="defaultCc" type="email" placeholder="z.B. buchhaltung@firma.de" className="w-full border border-black/20 px-3 py-2 font-sans text-sm" />
+        </div>
+        <div>
           <label className="block font-sans text-[11px] uppercase tracking-wide text-grey mb-1">Notizen</label>
           <textarea name="notes" rows={3} className="w-full border border-black/20 px-3 py-2 font-sans text-sm" />
         </div>
