@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# App-Bereich nicht indexieren (Login-geschützt)
+Disallow: /login
+Disallow: /sop
+
+Sitemap: https://www.lucid-cleaning.de/sitemap.xml
