@@ -72,7 +72,16 @@ type Assignment = {
   waterLocation: string;
   accessNote: string;
   emergencyNote: string;
+  translations: Translations;
 };
+
+// Felder der Standort-Texte (für DE-Eingabe und EN/ES-Übersetzung)
+const SITE_FIELDS = [
+  { key: "welcomeText", label: "Willkommenstext" },
+  { key: "waterLocation", label: "Wo gibt es Wasser?" },
+  { key: "accessNote", label: "Zugang / Schlüssel" },
+  { key: "emergencyNote", label: "Notfall-Hinweis" },
+];
 
 // Leere Strings entfernen; gibt null zurück, wenn nichts übersetzt ist.
 function cleanTr(tr: Translations): Record<string, Record<string, string>> | null {
@@ -498,6 +507,7 @@ function SiteAssignments({
   const [waterLocation, setWaterLocation] = useState("");
   const [accessNote, setAccessNote] = useState("");
   const [emergencyNote, setEmergencyNote] = useState("");
+  const [tr, setSiteTr] = useState<Translations>({});
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
@@ -509,44 +519,20 @@ function SiteAssignments({
         waterLocation: waterLocation.trim() || null,
         accessNote: accessNote.trim() || null,
         emergencyNote: emergencyNote.trim() || null,
+        translations: cleanTr(tr),
       });
       toast.success("Standort zugewiesen");
-      setSiteId(""); setWelcomeText(""); setWaterLocation(""); setAccessNote(""); setEmergencyNote("");
+      setSiteId(""); setWelcomeText(""); setWaterLocation(""); setAccessNote(""); setEmergencyNote(""); setSiteTr({});
     });
-  };
-
-  const copy = (url: string) => {
-    navigator.clipboard?.writeText(url);
-    toast.success("Link kopiert");
   };
 
   return (
     <section className="space-y-3">
       <h2 className="font-sans text-[11px] uppercase tracking-[3px] text-grey">Standorte & QR-Links</h2>
 
-      {assignments.map((a) => {
-        const url = `${origin}/sop/${a.qrToken}`;
-        return (
-          <div key={a.id} className="rounded-lg border border-gold/20 bg-white p-4">
-            <div className="flex items-center justify-between">
-              <span className="font-sans text-sm text-black">{a.siteName}</span>
-              <button
-                onClick={() => startTransition(async () => { await removeSiteAssignment(a.id, procedureId); toast.success("Entfernt"); })}
-                className="text-grey hover:text-red-600"
-                aria-label="Zuweisung entfernen"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="mt-2 flex items-center gap-2">
-              <code className="flex-1 truncate rounded bg-light px-2 py-1.5 font-mono text-xs text-grey">{url}</code>
-              <Link href={`/sop-procedures/qr/${a.qrToken}`} className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="QR drucken"><QrCode className="h-4 w-4" /></Link>
-              <button onClick={() => copy(url)} className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="Kopieren"><Copy className="h-4 w-4" /></button>
-              <a href={url} target="_blank" rel="noreferrer" className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="Öffnen"><ExternalLink className="h-4 w-4" /></a>
-            </div>
-          </div>
-        );
-      })}
+      {assignments.map((a) => (
+        <AssignmentRow key={a.id} a={a} procedureId={procedureId} origin={origin} pending={pending} startTransition={startTransition} />
+      ))}
 
       <div className="space-y-2 rounded-lg border border-dashed border-gold/40 p-4">
         <select
@@ -565,11 +551,105 @@ function SiteAssignments({
           <input value={accessNote} onChange={(e) => setAccessNote(e.target.value)} placeholder="Zugang / Schlüssel" className="rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
           <input value={emergencyNote} onChange={(e) => setEmergencyNote(e.target.value)} placeholder="Notfall-Hinweis" className="rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
         </div>
+        <TrPanel
+          tr={tr}
+          onChange={(lang, field, value) => setSiteTr((t) => setTr(t, lang, field, value))}
+          fields={SITE_FIELDS}
+        />
         <button onClick={assign} disabled={pending} className="rounded-full bg-black px-4 py-2 font-sans text-[10px] uppercase tracking-[2px] text-gold disabled:opacity-50">
           + Standort zuweisen
         </button>
       </div>
     </section>
+  );
+}
+
+// Bestehende Standort-Zuweisung: QR-Link + bearbeitbare Texte inkl. EN/ES.
+function AssignmentRow({
+  a,
+  procedureId,
+  origin,
+  pending,
+  startTransition,
+}: {
+  a: Assignment;
+  procedureId: string;
+  origin: string;
+  pending: boolean;
+  startTransition: React.TransitionStartFunction;
+}) {
+  const url = `${origin}/sop/${a.qrToken}`;
+  const [open, setOpen] = useState(false);
+  const [welcomeText, setWelcomeText] = useState(a.welcomeText);
+  const [waterLocation, setWaterLocation] = useState(a.waterLocation);
+  const [accessNote, setAccessNote] = useState(a.accessNote);
+  const [emergencyNote, setEmergencyNote] = useState(a.emergencyNote);
+  const [tr, setRowTr] = useState<Translations>(a.translations ?? {});
+
+  const copy = () => {
+    navigator.clipboard?.writeText(url);
+    toast.success("Link kopiert");
+  };
+
+  const saveTexts = () => {
+    startTransition(async () => {
+      await assignProcedureToSite(procedureId, a.siteId, {
+        welcomeText: welcomeText.trim() || null,
+        waterLocation: waterLocation.trim() || null,
+        accessNote: accessNote.trim() || null,
+        emergencyNote: emergencyNote.trim() || null,
+        translations: cleanTr(tr),
+      });
+      toast.success("Texte gespeichert");
+    });
+  };
+
+  return (
+    <div className="rounded-lg border border-gold/20 bg-white p-4">
+      <div className="flex items-center justify-between">
+        <span className="font-sans text-sm text-black">{a.siteName}</span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            className="mr-1 flex items-center gap-1 font-sans text-[10px] uppercase tracking-[2px] text-grey hover:text-gold-dark"
+          >
+            Texte {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+          <Link href={`/sop-procedures/qr/${a.qrToken}`} className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="QR drucken"><QrCode className="h-4 w-4" /></Link>
+          <button onClick={copy} className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="Kopieren"><Copy className="h-4 w-4" /></button>
+          <a href={url} target="_blank" rel="noreferrer" className="rounded border border-black/10 p-1.5 text-grey hover:text-gold-dark" aria-label="Öffnen"><ExternalLink className="h-4 w-4" /></a>
+          <button
+            onClick={() => startTransition(async () => { await removeSiteAssignment(a.id, procedureId); toast.success("Entfernt"); })}
+            className="p-1.5 text-grey hover:text-red-600"
+            aria-label="Zuweisung entfernen"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      <div className="mt-2 flex items-center gap-2">
+        <code className="flex-1 truncate rounded bg-light px-2 py-1.5 font-mono text-xs text-grey">{url}</code>
+      </div>
+      {open && (
+        <div className="mt-3 space-y-2 border-t border-black/5 pt-3">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <input value={welcomeText} onChange={(e) => setWelcomeText(e.target.value)} placeholder="Willkommenstext (optional)" className="rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+            <input value={waterLocation} onChange={(e) => setWaterLocation(e.target.value)} placeholder="Wo gibt es Wasser?" className="rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+            <input value={accessNote} onChange={(e) => setAccessNote(e.target.value)} placeholder="Zugang / Schlüssel" className="rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+            <input value={emergencyNote} onChange={(e) => setEmergencyNote(e.target.value)} placeholder="Notfall-Hinweis" className="rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+          </div>
+          <TrPanel
+            tr={tr}
+            onChange={(lang, field, value) => setRowTr((t) => setTr(t, lang, field, value))}
+            fields={SITE_FIELDS}
+          />
+          <button onClick={saveTexts} disabled={pending} className="rounded-full bg-black px-4 py-2 font-sans text-[10px] uppercase tracking-[2px] text-gold disabled:opacity-50">
+            Texte speichern
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 

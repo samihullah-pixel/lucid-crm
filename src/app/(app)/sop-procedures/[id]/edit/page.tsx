@@ -74,6 +74,7 @@ export default async function EditProcedurePage(props: {
         waterLocation: sp.waterLocation ?? "",
         accessNote: sp.accessNote ?? "",
         emergencyNote: sp.emergencyNote ?? "",
+        translations: asTr(sp.translations),
       }))}
     />
   );
