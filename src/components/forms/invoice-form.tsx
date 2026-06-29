@@ -77,7 +77,7 @@ export function InvoiceForm({
             Nettobetrag Regelleistung (EUR)
             {supplyNetHint !== undefined && supplyNetHint > 0 && (
               <span className="ml-2 font-normal text-gold-dark">
-                + {supplyNetHint.toFixed(2)} € Verbrauchsmittel werden addiert
+                + {supplyNetHint.toFixed(2)} € Verbrauchsmittel &amp; Zusatzarbeiten werden addiert
               </span>
             )}
           </label>
