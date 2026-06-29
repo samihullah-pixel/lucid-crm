@@ -14,6 +14,7 @@ export async function GET(request: Request) {
     include: {
       customer: true,
       property: true,
+      items: { orderBy: { sortOrder: "asc" } },
     },
   });
   if (!invoice) return new Response("Not found", { status: 404 });
@@ -31,6 +32,14 @@ export async function GET(request: Request) {
         grossAmount: Number(invoice.grossAmount),
         status: invoice.status,
         notes: invoice.notes,
+        items: invoice.items.map((it) => ({
+          type: it.type,
+          description: it.description,
+          quantity: it.quantity != null ? Number(it.quantity) : null,
+          unit: it.unit,
+          unitPrice: it.unitPrice != null ? Number(it.unitPrice) : null,
+          totalPrice: Number(it.totalPrice),
+        })),
         customer: {
           companyName: invoice.customer.companyName,
           contactPerson: invoice.customer.contactPerson,
