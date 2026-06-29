@@ -3,8 +3,27 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import type { StepMediaType } from "@prisma/client";
+import { Prisma, type StepMediaType } from "@prisma/client";
 import { getTemplate } from "@/lib/sop-templates";
+
+// Übersetzungen: { en?: {feld: text}, es?: {feld: text} }.
+// Leeres Objekt → JsonNull (Feld in der DB leeren).
+export type Translations = Record<string, Record<string, string>> | null;
+
+function toJson(tr: Translations): Prisma.InputJsonValue | typeof Prisma.JsonNull {
+  return tr && Object.keys(tr).length > 0 ? (tr as Prisma.InputJsonValue) : Prisma.JsonNull;
+}
+
+function parseTranslations(raw: unknown): Translations {
+  if (typeof raw !== "string" || !raw) return null;
+  try {
+    const v = JSON.parse(raw);
+    if (v && typeof v === "object" && Object.keys(v).length > 0) return v as Translations;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
 
 export async function createProcedure(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
@@ -67,7 +86,11 @@ export async function createProcedureFromTemplate(formData: FormData) {
 export async function updateProcedureMeta(id: string, formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
-  await prisma.procedure.update({ where: { id }, data: { name, description } });
+  const translations = parseTranslations(formData.get("translations"));
+  await prisma.procedure.update({
+    where: { id },
+    data: { name, description, translations: toJson(translations) },
+  });
   revalidatePath("/sop-procedures");
 }
 
@@ -102,6 +125,7 @@ type StepInput = {
   mediaUrl: string | null;
   mediaType: StepMediaType;
   order: number;
+  translations?: Translations;
 };
 
 type EquipmentInput = {
@@ -109,6 +133,7 @@ type EquipmentInput = {
   equipmentId: string;
   locationNote: string | null;
   order: number;
+  translations?: Translations;
 };
 
 export async function saveProcedure(
@@ -140,6 +165,7 @@ export async function saveProcedure(
         mediaUrl: s.mediaUrl,
         mediaType: s.mediaType,
         order: s.order,
+        translations: toJson(s.translations ?? null),
       };
       if (s.id) {
         await tx.procedureStep.update({ where: { id: s.id }, data });
@@ -161,6 +187,13 @@ export async function saveProcedure(
       await tx.procedureEquipment.deleteMany({ where: { id: { in: eqToDelete } } });
     }
     for (const e of equipment) {
+      // Übersetzung des Equipment-Namens liegt am (geteilten) EquipmentItem
+      if (e.translations !== undefined) {
+        await tx.equipmentItem.update({
+          where: { id: e.equipmentId },
+          data: { translations: toJson(e.translations ?? null) },
+        });
+      }
       if (e.id) {
         await tx.procedureEquipment.update({
           where: { id: e.id },

@@ -18,6 +18,7 @@ import {
   QrCode,
   ImagePlus,
   Loader2,
+  Languages,
   X,
 } from "lucide-react";
 import type { StepMediaType } from "@prisma/client";
@@ -32,6 +33,13 @@ import {
 let keySeq = 0;
 const nextKey = () => `k${keySeq++}`;
 
+type Lang = "en" | "es";
+const LANGS: { code: Lang; label: string }[] = [
+  { code: "en", label: "Englisch (EN)" },
+  { code: "es", label: "Spanisch (ES)" },
+];
+type Translations = { en?: Record<string, string>; es?: Record<string, string> };
+
 type Step = {
   key: string;
   id?: string;
@@ -43,8 +51,16 @@ type Step = {
   requiresCheck: boolean;
   mediaUrl: string;
   mediaType: StepMediaType;
+  translations: Translations;
 };
-type Equip = { key: string; id?: string; equipmentId: string; name: string; locationNote: string };
+type Equip = {
+  key: string;
+  id?: string;
+  equipmentId: string;
+  name: string;
+  locationNote: string;
+  translations: Translations;
+};
 type LibItem = { id: string; name: string; defaultLocation: string | null };
 type Site = { id: string; name: string };
 type Assignment = {
@@ -58,6 +74,26 @@ type Assignment = {
   emergencyNote: string;
 };
 
+// Leere Strings entfernen; gibt null zurück, wenn nichts übersetzt ist.
+function cleanTr(tr: Translations): Record<string, Record<string, string>> | null {
+  const out: Record<string, Record<string, string>> = {};
+  (["en", "es"] as const).forEach((lang) => {
+    const obj = tr[lang];
+    if (!obj) return;
+    const cleaned: Record<string, string> = {};
+    Object.entries(obj).forEach(([k, v]) => {
+      const t = (v ?? "").trim();
+      if (t) cleaned[k] = t;
+    });
+    if (Object.keys(cleaned).length) out[lang] = cleaned;
+  });
+  return Object.keys(out).length ? out : null;
+}
+
+function setTr(tr: Translations, lang: Lang, field: string, value: string): Translations {
+  return { ...tr, [lang]: { ...(tr[lang] ?? {}), [field]: value } };
+}
+
 export function ProcedureBuilder({
   procedure,
   initialSteps,
@@ -66,7 +102,7 @@ export function ProcedureBuilder({
   sites,
   assignments,
 }: {
-  procedure: { id: string; name: string; description: string | null };
+  procedure: { id: string; name: string; description: string | null; translations: Translations };
   initialSteps: Omit<Step, "key">[];
   initialEquipment: Omit<Equip, "key">[];
   equipmentLibrary: LibItem[];
@@ -75,6 +111,7 @@ export function ProcedureBuilder({
 }) {
   const [name, setName] = useState(procedure.name);
   const [description, setDescription] = useState(procedure.description ?? "");
+  const [procTr, setProcTr] = useState<Translations>(procedure.translations ?? {});
   const [steps, setSteps] = useState<Step[]>(
     initialSteps.map((s) => ({ ...s, key: nextKey() }))
   );
@@ -108,10 +145,12 @@ export function ProcedureBuilder({
   const addStep = () =>
     setSteps((s) => [
       ...s,
-      { key: nextKey(), section: "", title: "", body: "", tip: "", warning: "", requiresCheck: false, mediaUrl: "", mediaType: "NONE" },
+      { key: nextKey(), section: "", title: "", body: "", tip: "", warning: "", requiresCheck: false, mediaUrl: "", mediaType: "NONE", translations: {} },
     ]);
   const updateStep = (key: string, patch: Partial<Step>) =>
     setSteps((s) => s.map((st) => (st.key === key ? { ...st, ...patch } : st)));
+  const updateStepTr = (key: string, lang: Lang, field: string, value: string) =>
+    setSteps((s) => s.map((st) => (st.key === key ? { ...st, translations: setTr(st.translations, lang, field, value) } : st)));
   const removeStep = (key: string) => setSteps((s) => s.filter((st) => st.key !== key));
   const moveStep = (i: number, dir: -1 | 1) =>
     setSteps((s) => {
@@ -133,12 +172,14 @@ export function ProcedureBuilder({
     }
     setEquipment((e) => [
       ...e,
-      { key: nextKey(), equipmentId: id, name: lib.name, locationNote: lib.defaultLocation ?? "" },
+      { key: nextKey(), equipmentId: id, name: lib.name, locationNote: lib.defaultLocation ?? "", translations: {} },
     ]);
   };
   const removeEquip = (key: string) => setEquipment((e) => e.filter((x) => x.key !== key));
   const updateEquip = (key: string, patch: Partial<Equip>) =>
     setEquipment((e) => e.map((x) => (x.key === key ? { ...x, ...patch } : x)));
+  const updateEquipTr = (key: string, lang: Lang, value: string) =>
+    setEquipment((e) => e.map((x) => (x.key === key ? { ...x, translations: setTr(x.translations, lang, "name", value) } : x)));
 
   const [newEqName, setNewEqName] = useState("");
   const [newEqLoc, setNewEqLoc] = useState("");
@@ -150,7 +191,7 @@ export function ProcedureBuilder({
       setLibrary((l) => [...l, item]);
       setEquipment((e) => [
         ...e,
-        { key: nextKey(), equipmentId: item.id, name: item.name, locationNote: item.defaultLocation ?? "" },
+        { key: nextKey(), equipmentId: item.id, name: item.name, locationNote: item.defaultLocation ?? "", translations: {} },
       ]);
       setNewEqName("");
       setNewEqLoc("");
@@ -165,7 +206,9 @@ export function ProcedureBuilder({
       return;
     }
     startTransition(async () => {
-      await updateProcedureMeta(procedure.id, toFD({ name, description }));
+      const metaFd = toFD({ name, description });
+      metaFd.append("translations", JSON.stringify(cleanTr(procTr)));
+      await updateProcedureMeta(procedure.id, metaFd);
       await saveProcedure(
         procedure.id,
         steps.map((s, i) => ({
@@ -179,12 +222,14 @@ export function ProcedureBuilder({
           mediaUrl: s.mediaUrl.trim() || null,
           mediaType: s.mediaType,
           order: i,
+          translations: cleanTr(s.translations),
         })),
         equipment.map((e, i) => ({
           id: e.id,
           equipmentId: e.equipmentId,
           locationNote: e.locationNote.trim() || null,
           order: i,
+          translations: cleanTr(e.translations),
         }))
       );
       toast.success("Anleitung gespeichert");
@@ -208,6 +253,14 @@ export function ProcedureBuilder({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Kurzbeschreibung…"
             className="mt-1 w-full bg-transparent font-sans text-sm font-light text-grey focus:outline-none"
+          />
+          <TrPanel
+            tr={procTr}
+            onChange={(lang, field, value) => setProcTr((t) => setTr(t, lang, field, value))}
+            fields={[
+              { key: "name", label: "Name" },
+              { key: "description", label: "Kurzbeschreibung" },
+            ]}
           />
         </div>
       </div>
@@ -269,6 +322,17 @@ export function ProcedureBuilder({
                 />
               </div>
             </div>
+            <TrPanel
+              tr={s.translations}
+              onChange={(lang, field, value) => updateStepTr(s.key, lang, field, value)}
+              fields={[
+                { key: "section", label: "Abschnitt" },
+                { key: "title", label: "Titel" },
+                { key: "body", label: "Beschreibung", multiline: true },
+                { key: "tip", label: "Tipp" },
+                { key: "warning", label: "Warnung" },
+              ]}
+            />
           </div>
         ))}
         <button
@@ -283,15 +347,23 @@ export function ProcedureBuilder({
       <section className="space-y-3">
         <h2 className="font-sans text-[11px] uppercase tracking-[3px] text-grey">Equipment & Material</h2>
         {equipment.map((e) => (
-          <div key={e.key} className="flex items-center gap-3 rounded-lg border border-gold/20 bg-white p-3">
-            <span className="font-sans text-sm text-black">{e.name}</span>
-            <input
-              value={e.locationNote}
-              onChange={(ev) => updateEquip(e.key, { locationNote: ev.target.value })}
-              placeholder="Fundort (z.B. Lager, Wand links)"
-              className="ml-auto w-1/2 rounded border border-black/10 px-2 py-1 font-sans text-xs text-grey focus:border-gold focus:outline-none"
+          <div key={e.key} className="rounded-lg border border-gold/20 bg-white p-3">
+            <div className="flex items-center gap-3">
+              <span className="font-sans text-sm text-black">{e.name}</span>
+              <input
+                value={e.locationNote}
+                onChange={(ev) => updateEquip(e.key, { locationNote: ev.target.value })}
+                placeholder="Fundort (z.B. Lager, Wand links)"
+                className="ml-auto w-1/2 rounded border border-black/10 px-2 py-1 font-sans text-xs text-grey focus:border-gold focus:outline-none"
+              />
+              <button onClick={() => removeEquip(e.key)} aria-label="Entfernen" className="text-grey hover:text-red-600"><Trash2 className="h-4 w-4" /></button>
+            </div>
+            <TrPanel
+              tr={e.translations}
+              onChange={(lang, _field, value) => updateEquipTr(e.key, lang, value)}
+              fields={[{ key: "name", label: "Name" }]}
+              note="Übersetzung gilt für dieses Material überall."
             />
-            <button onClick={() => removeEquip(e.key)} aria-label="Entfernen" className="text-grey hover:text-red-600"><Trash2 className="h-4 w-4" /></button>
           </div>
         ))}
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-black/10 bg-light p-3">
@@ -342,6 +414,68 @@ export function ProcedureBuilder({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Aufklappbares EN/ES-Übersetzungsfeld. Deutsch bleibt das Original oben.
+function TrPanel({
+  tr,
+  onChange,
+  fields,
+  note,
+}: {
+  tr: Translations;
+  onChange: (lang: Lang, field: string, value: string) => void;
+  fields: { key: string; label: string; multiline?: boolean }[];
+  note?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const count = (["en", "es"] as const).reduce(
+    (n, l) => n + Object.values(tr[l] ?? {}).filter((v) => (v ?? "").trim()).length,
+    0
+  );
+  return (
+    <div className="mt-2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1.5 font-sans text-[11px] uppercase tracking-[2px] text-grey hover:text-gold-dark"
+      >
+        <Languages className="h-3.5 w-3.5" />
+        Übersetzung EN · ES{count > 0 ? ` (${count})` : ""}
+        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+      </button>
+      {open && (
+        <div className="mt-2 grid gap-3 rounded-lg bg-light p-3 sm:grid-cols-2">
+          {LANGS.map(({ code, label }) => (
+            <div key={code} className="space-y-2">
+              <p className="font-sans text-[10px] uppercase tracking-[2px] text-gold-dark">{label}</p>
+              {fields.map((f) =>
+                f.multiline ? (
+                  <textarea
+                    key={f.key}
+                    value={tr[code]?.[f.key] ?? ""}
+                    onChange={(e) => onChange(code, f.key, e.target.value)}
+                    placeholder={f.label}
+                    rows={2}
+                    className="w-full rounded border border-black/15 bg-white px-2 py-1.5 font-sans text-xs focus:border-gold focus:outline-none"
+                  />
+                ) : (
+                  <input
+                    key={f.key}
+                    value={tr[code]?.[f.key] ?? ""}
+                    onChange={(e) => onChange(code, f.key, e.target.value)}
+                    placeholder={f.label}
+                    className="w-full rounded border border-black/15 bg-white px-2 py-1.5 font-sans text-xs focus:border-gold focus:outline-none"
+                  />
+                )
+              )}
+            </div>
+          ))}
+          {note && <p className="font-sans text-[10px] text-grey sm:col-span-2">{note}</p>}
+        </div>
+      )}
     </div>
   );
 }
