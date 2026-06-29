@@ -65,6 +65,14 @@ type InvoiceData = {
   grossAmount: number;
   status: string;
   notes: string | null;
+  items?: Array<{
+    type: string;
+    description: string;
+    quantity: number | null;
+    unit: string | null;
+    unitPrice: number | null;
+    totalPrice: number;
+  }>;
   customer: {
     companyName: string;
     contactPerson: string | null;
@@ -84,7 +92,26 @@ function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+function itemLabel(type: string): string {
+  switch (type) {
+    case "ZUSATZARBEIT":
+      return "Zusatzarbeit";
+    case "VERBRAUCHSMATERIAL":
+      return "Verbrauchsmaterial";
+    case "MATERIALPAUSCHALE":
+      return "Materialpauschale";
+    case "SERVICEPAUSCHALE":
+      return "Servicepauschale";
+    default:
+      return "";
+  }
+}
+
 export function InvoiceDocument({ invoice }: { invoice: InvoiceData }) {
+  const items = invoice.items ?? [];
+  // Grundleistung = Nettobetrag abzüglich der einzeln ausgewiesenen Positionen
+  const itemsTotal = items.reduce((sum, it) => sum + it.totalPrice, 0);
+  const baseAmount = Math.round((invoice.netAmount - itemsTotal) * 100) / 100;
   return (
     <Document>
       <Page size="A4" style={s.page}>
@@ -138,9 +165,25 @@ export function InvoiceDocument({ invoice }: { invoice: InvoiceData }) {
             Reinigungsleistungen{invoice.property ? ` – ${invoice.property.name}` : ""}{"\n"}
             <Text style={{ color: grey, fontSize: 8 }}>Leistungszeitraum {fmtDate(invoice.servicePeriodFrom)} – {fmtDate(invoice.servicePeriodTo)}</Text>
           </Text>
-          <Text style={s.colNum}>{fmt(invoice.netAmount)}</Text>
+          <Text style={s.colNum}>{fmt(baseAmount)}</Text>
         </View>
-        <View style={[s.tableRow, s.tableRowAlt]}>
+        {items.map((it, idx) => {
+          const label = itemLabel(it.type);
+          const qtyHint =
+            it.quantity != null && it.unitPrice != null
+              ? `${it.quantity} ${it.unit ?? ""} × ${fmt(it.unitPrice)}`
+              : null;
+          return (
+            <View key={idx} style={idx % 2 === 0 ? [s.tableRow, s.tableRowAlt] : s.tableRow}>
+              <Text style={s.colDesc}>
+                {label ? `${label}: ` : ""}{it.description}
+                {qtyHint ? <Text style={{ color: grey, fontSize: 8 }}>{"\n"}{qtyHint}</Text> : null}
+              </Text>
+              <Text style={s.colNum}>{fmt(it.totalPrice)}</Text>
+            </View>
+          );
+        })}
+        <View style={items.length % 2 === 0 ? [s.tableRow, s.tableRowAlt] : s.tableRow}>
           <Text style={[s.colDesc, { color: grey }]}>Mehrwertsteuer {invoice.taxRate}%</Text>
           <Text style={[s.colNum, { color: grey }]}>{fmt(invoice.taxAmount)}</Text>
         </View>
