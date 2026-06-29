@@ -4,6 +4,14 @@ import { ProcedureBuilder } from "@/components/sop/procedure-builder";
 
 export const dynamic = "force-dynamic";
 
+// Prisma-Json → { en?: {...}, es?: {...} } für den Editor
+function asTr(value: unknown): { en?: Record<string, string>; es?: Record<string, string> } {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as { en?: Record<string, string>; es?: Record<string, string> };
+  }
+  return {};
+}
+
 export default async function EditProcedurePage(props: {
   params: Promise<{ id: string }>;
 }) {
@@ -30,6 +38,7 @@ export default async function EditProcedurePage(props: {
         id: procedure.id,
         name: procedure.name,
         description: procedure.description,
+        translations: asTr(procedure.translations),
       }}
       initialSteps={procedure.steps.map((s) => ({
         id: s.id,
@@ -41,12 +50,14 @@ export default async function EditProcedurePage(props: {
         requiresCheck: s.requiresCheck,
         mediaUrl: s.mediaUrl ?? "",
         mediaType: s.mediaType,
+        translations: asTr(s.translations),
       }))}
       initialEquipment={procedure.equipment.map((e) => ({
         id: e.id,
         equipmentId: e.equipmentId,
         name: e.equipment.name,
         locationNote: e.locationNote ?? e.equipment.defaultLocation ?? "",
+        translations: asTr(e.equipment.translations),
       }))}
       equipmentLibrary={allEquipment.map((e) => ({
         id: e.id,
