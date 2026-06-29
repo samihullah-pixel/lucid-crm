@@ -223,12 +223,15 @@ export async function assignProcedureToSite(
     waterLocation: string | null;
     accessNote: string | null;
     emergencyNote: string | null;
+    translations?: Translations;
   }
 ) {
+  const { translations, ...texts } = fields;
+  const data = { ...texts, translations: toJson(translations ?? null) };
   await prisma.siteProcedure.upsert({
     where: { siteId_procedureId: { siteId, procedureId } },
-    update: { ...fields, isActive: true },
-    create: { siteId, procedureId, ...fields },
+    update: { ...data, isActive: true },
+    create: { siteId, procedureId, ...data },
   });
   revalidatePath(`/sop-procedures/${procedureId}/edit`);
 }
