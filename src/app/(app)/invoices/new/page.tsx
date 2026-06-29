@@ -30,22 +30,47 @@ export default async function NewInvoicePage(
   // Offene Verbrauchsmittel für gewählten Kunden
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let unbilledSupplyItems: any[] = [];
+  // Offene Zusatzarbeiten für gewählten Kunden
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let unbilledExtraWorks: any[] = [];
 
   if (customerId) {
-    unbilledSupplyItems = await prisma.supplyOrderItem.findMany({
-      where: { customerId, billed: false },
-      include: {
-        product: { select: { name: true, unit: true } },
-        order: { select: { createdAt: true, supplier: { select: { name: true } } } },
-      },
-      orderBy: { createdAt: "asc" },
-    });
+    [unbilledSupplyItems, unbilledExtraWorks] = await Promise.all([
+      prisma.supplyOrderItem.findMany({
+        where: { customerId, billed: false },
+        include: {
+          product: { select: { name: true, unit: true } },
+          order: { select: { createdAt: true, supplier: { select: { name: true } } } },
+        },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.extraWork.findMany({
+        where: { customerId, billable: true, alreadyInvoiced: false },
+        include: { property: { select: { name: true } } },
+        orderBy: { date: "asc" },
+      }),
+    ]);
   }
 
   const supplyTotal = unbilledSupplyItems.reduce(
     (sum, i) => sum + i.quantity * Number(i.unitPrice),
     0
   );
+
+  const extraWorkAmount = (e: {
+    billingType: string;
+    hours: unknown;
+    hourlyRate: unknown;
+    flatRatePrice: unknown;
+  }) =>
+    e.billingType === "PAUSCHAL"
+      ? Number(e.flatRatePrice ?? 0)
+      : Number(e.hours ?? 0) * Number(e.hourlyRate ?? 0);
+
+  const extraTotal = unbilledExtraWorks.reduce((sum, e) => sum + extraWorkAmount(e), 0);
+
+  // Hinweis-Summe für das Formular: Verbrauchsmittel + Zusatzarbeiten
+  const additionsTotal = supplyTotal + extraTotal;
 
   return (
     <div className="space-y-6">
@@ -83,6 +108,65 @@ export default async function NewInvoicePage(
         </div>
       ) : (
         <>
+          {/* Offene Zusatzarbeiten */}
+          {unbilledExtraWorks.length > 0 && (
+            <div className="border border-gold/30 bg-amber-50/40 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="font-sans text-[11px] uppercase tracking-[2px] text-gold-dark">
+                  Offene Zusatzarbeiten – {unbilledExtraWorks.length} Position{unbilledExtraWorks.length > 1 ? "en" : ""}
+                </h2>
+                <span className="font-sans text-sm font-medium">{extraTotal.toFixed(2)} € netto</span>
+              </div>
+              <p className="font-sans text-xs text-grey">
+                Diese Zusatzarbeiten werden als eigene Rechnungspositionen angehängt und als abgerechnet markiert.
+                Haken entfernen zum Ausschließen.
+              </p>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[11px] uppercase tracking-wide text-grey border-b border-black/10">
+                    <th className="py-1 pr-3 text-left w-8"></th>
+                    <th className="py-1 pr-3 text-left">Datum</th>
+                    <th className="py-1 pr-3 text-left">Beschreibung</th>
+                    <th className="py-1 pr-3 text-left">Objekt</th>
+                    <th className="py-1 pr-3 text-left">Abrechnung</th>
+                    <th className="py-1 pr-3 text-left">Freigabe</th>
+                    <th className="py-1 pr-3 text-right">Betrag</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {unbilledExtraWorks.map((e) => (
+                    <tr key={e.id} className="border-b border-black/5">
+                      <td className="py-1.5 pr-3">
+                        <input
+                          form="invoice-form"
+                          type="checkbox"
+                          name="extraWorkIds"
+                          value={e.id}
+                          defaultChecked
+                          className="accent-gold"
+                        />
+                      </td>
+                      <td className="py-1.5 pr-3 text-grey">
+                        {new Date(e.date).toLocaleDateString("de-DE")}
+                      </td>
+                      <td className="py-1.5 pr-3">{e.description}</td>
+                      <td className="py-1.5 pr-3 text-grey">{e.property?.name ?? "-"}</td>
+                      <td className="py-1.5 pr-3 text-grey">
+                        {e.billingType === "PAUSCHAL"
+                          ? "Pauschal"
+                          : `${Number(e.hours ?? 0)} Std × ${Number(e.hourlyRate ?? 0).toFixed(2)} €`}
+                      </td>
+                      <td className="py-1.5 pr-3 text-grey">
+                        {e.customerApproved ? "✓ Kunde" : "offen"}
+                      </td>
+                      <td className="py-1.5 text-right">{extraWorkAmount(e).toFixed(2)} €</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           {/* Offene Verbrauchsmittel */}
           {unbilledSupplyItems.length > 0 && (
             <div className="border border-gold/30 bg-amber-50/40 p-5 space-y-3">
@@ -143,7 +227,7 @@ export default async function NewInvoicePage(
             customers={customers}
             properties={properties}
             preselectedCustomerId={customerId}
-            supplyNetHint={supplyTotal > 0 ? supplyTotal : undefined}
+            supplyNetHint={additionsTotal > 0 ? additionsTotal : undefined}
           />
         </>
       )}
