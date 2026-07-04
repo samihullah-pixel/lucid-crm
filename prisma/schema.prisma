@@ -141,6 +141,7 @@ model ProcedureStep {
   translations  Json?
   requiresCheck Boolean       @default(false)
   order         Int           @default(0)
+  runChecks     ProcedureRunCheck[]
   @@index([procedureId])
 }
 
@@ -189,9 +190,45 @@ model SiteProcedure {
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  runs          ProcedureRun[]
   @@unique([siteId, procedureId])
   @@index([siteId])
   @@index([procedureId])
+}
+
+enum ProcedureRunStatus {
+  OFFEN
+  ABGESCHLOSSEN
+}
+
+// One calendar-day pass through a procedure's checkable steps, started via
+// the public QR guide. Mirrors WorkLog/WorkLogEntry for the Arbeitsprotokoll.
+model ProcedureRun {
+  id              String             @id @default(cuid())
+  siteProcedureId String
+  siteProcedure   SiteProcedure      @relation(fields: [siteProcedureId], references: [id], onDelete: Cascade)
+  date            DateTime           @db.Date
+  status          ProcedureRunStatus @default(OFFEN)
+  completedAt     DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  checks          ProcedureRunCheck[]
+  @@unique([siteProcedureId, date])
+  @@index([siteProcedureId])
+  @@index([date])
+}
+
+model ProcedureRunCheck {
+  id             String        @id @default(cuid())
+  procedureRunId String
+  procedureRun   ProcedureRun  @relation(fields: [procedureRunId], references: [id], onDelete: Cascade)
+  stepId         String
+  step           ProcedureStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  checked        Boolean       @default(false)
+  checkedAt      DateTime?
+  @@unique([procedureRunId, stepId])
+  @@index([procedureRunId])
+  @@index([stepId])
 }
 
 model Shift {

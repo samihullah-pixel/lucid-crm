@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getOrCreateTodayRun } from "@/actions/procedure-runs";
 
 export async function getGuideByToken(token: string) {
   const sp = await prisma.siteProcedure.findUnique({
@@ -18,7 +19,11 @@ export async function getGuideByToken(token: string) {
   });
 
   if (!sp || !sp.isActive || !sp.procedure.isActive) return null;
-  return sp;
+
+  const hasCheckableSteps = sp.procedure.steps.some((s) => s.requiresCheck);
+  const run = hasCheckableSteps ? await getOrCreateTodayRun(sp.id) : null;
+
+  return { ...sp, run };
 }
 
 export type Guide = NonNullable<Awaited<ReturnType<typeof getGuideByToken>>>;
