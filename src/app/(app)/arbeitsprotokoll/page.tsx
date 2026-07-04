@@ -105,14 +105,13 @@ export default async function ArbeitsprotokollPage() {
             const dayName = WEEKDAY_NAMES[log.date.getDay()];
 
             return (
-              <Link
+              <div
                 key={log.id}
-                href={`/arbeitsprotokoll/${log.id}`}
-                className="block border border-gold/20 bg-white transition-colors hover:border-gold/40"
+                className="border border-gold/20 bg-white transition-colors hover:border-gold/40"
               >
                 <div className="px-4 py-4 sm:px-6">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 min-w-0">
+                    <Link href={`/arbeitsprotokoll/${log.id}`} className="flex min-w-0 flex-1 items-start gap-3">
                       {log.site?.color && (
                         <span
                           className="mt-1 inline-block h-3 w-3 flex-shrink-0 rounded-full"
@@ -127,16 +126,26 @@ export default async function ArbeitsprotokollPage() {
                           {dayName}, {formatDate(log.date)}
                         </p>
                       </div>
-                    </div>
+                    </Link>
 
-                    <span
-                      className={`flex-shrink-0 rounded border px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide ${status.bg} ${status.text}`}
-                    >
-                      {status.label}
-                    </span>
+                    <div className="flex flex-shrink-0 flex-col items-end gap-2">
+                      <span
+                        className={`rounded border px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide ${status.bg} ${status.text}`}
+                      >
+                        {status.label}
+                      </span>
+                      <a
+                        href={`/api/work-log-pdf?workLogId=${log.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-sans text-[10px] uppercase tracking-wide text-grey hover:text-gold"
+                      >
+                        PDF
+                      </a>
+                    </div>
                   </div>
 
-                  <div className="mt-3 flex items-center gap-3">
+                  <Link href={`/arbeitsprotokoll/${log.id}`} className="mt-3 flex items-center gap-3">
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/5">
                       <div
                         className={`h-full rounded-full transition-all ${pct === 100 ? "bg-emerald-500" : "bg-gold"}`}
@@ -146,9 +155,9 @@ export default async function ArbeitsprotokollPage() {
                     <span className="flex-shrink-0 font-sans text-xs text-grey">
                       {checked}/{total}
                     </span>
-                  </div>
+                  </Link>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

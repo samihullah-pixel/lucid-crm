@@ -14,8 +14,15 @@ import {
   Phone,
   MapPin,
   WifiOff,
+  Check,
+  RotateCcw,
 } from "lucide-react";
 import type { Guide } from "@/lib/sop";
+import {
+  toggleProcedureStepCheck,
+  completeProcedureRun,
+  reopenProcedureRun,
+} from "@/actions/procedure-runs";
 
 type View = "hub" | "steps" | "equipment" | "emergency";
 type Lang = "de" | "en" | "es";
@@ -48,6 +55,11 @@ const UI = {
     emergencyFallback:
       "Im Notfall nicht selbst handeln – sofort die hinterlegte Notfallnummer anrufen.",
     welcomeFallback: (s: string) => `Willkommen · ${s}`,
+    markStep: "Als erledigt markieren",
+    stepChecked: "Erledigt",
+    progress: (a: number, b: number) => `${a}/${b} erledigt`,
+    runCompleted: "Heute abgeschlossen",
+    reopenRun: "Wieder öffnen",
   },
   en: {
     equipment: "Equipment & supplies",
@@ -74,6 +86,11 @@ const UI = {
     emergencyFallback:
       "In an emergency, don't act alone – call the emergency contact immediately.",
     welcomeFallback: (s: string) => `Welcome · ${s}`,
+    markStep: "Mark as done",
+    stepChecked: "Done",
+    progress: (a: number, b: number) => `${a}/${b} done`,
+    runCompleted: "Completed today",
+    reopenRun: "Reopen",
   },
   es: {
     equipment: "Equipo y material",
@@ -100,6 +117,11 @@ const UI = {
     emergencyFallback:
       "En una emergencia, no actúes solo – llama de inmediato al contacto de emergencia.",
     welcomeFallback: (s: string) => `Bienvenido · ${s}`,
+    markStep: "Marcar como hecho",
+    stepChecked: "Hecho",
+    progress: (a: number, b: number) => `${a}/${b} hecho`,
+    runCompleted: "Completado hoy",
+    reopenRun: "Reabrir",
   },
 } as const;
 
@@ -115,10 +137,37 @@ export function SopGuide({ guide }: { guide: Guide }) {
   const [view, setView] = useState<View>("hub");
   const [step, setStep] = useState(0);
   const [lang, setLang] = useState<Lang>("de");
+  const [checks, setChecks] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    for (const c of guide.run?.checks ?? []) initial[c.stepId] = c.checked;
+    return initial;
+  });
+  const [runStatus, setRunStatus] = useState(guide.run?.status ?? null);
 
   const t = UI[lang];
-  const { site, procedure } = guide;
+  const { site, procedure, run } = guide;
   const steps = procedure.steps;
+  const checkableSteps = steps.filter((s) => s.requiresCheck);
+  const checkedCount = checkableSteps.filter((s) => checks[s.id]).length;
+
+  function toggleStep(stepId: string) {
+    if (!run) return;
+    const next = !checks[stepId];
+    setChecks((prev) => ({ ...prev, [stepId]: next }));
+    toggleProcedureStepCheck(run.id, stepId, next);
+  }
+
+  function finishRun() {
+    if (!run) return;
+    setRunStatus("ABGESCHLOSSEN");
+    completeProcedureRun(run.id);
+  }
+
+  function reopenRun() {
+    if (!run) return;
+    setRunStatus("OFFEN");
+    reopenProcedureRun(run.id);
+  }
 
   const LangSwitch = (
     <div className="flex gap-1.5">
@@ -192,6 +241,27 @@ export function SopGuide({ guide }: { guide: Guide }) {
               {tf(s, "tip", s.tip, lang)}
             </div>
           )}
+          {s.requiresCheck && run && (
+            <button
+              onClick={() => toggleStep(s.id)}
+              className={`mt-5 flex w-full items-center gap-3 rounded-xl border-2 px-4 py-4 text-left transition-colors ${
+                checks[s.id]
+                  ? "border-emerald-400 bg-emerald-50"
+                  : "border-black/10 bg-white hover:border-gold"
+              }`}
+            >
+              <span
+                className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border-2 ${
+                  checks[s.id] ? "border-emerald-400 bg-emerald-500 text-white" : "border-black/15 bg-white"
+                }`}
+              >
+                {checks[s.id] && <Check className="h-4 w-4" strokeWidth={3} />}
+              </span>
+              <span className={`font-sans text-sm ${checks[s.id] ? "text-emerald-700" : "text-black"}`}>
+                {checks[s.id] ? t.stepChecked : t.markStep}
+              </span>
+            </button>
+          )}
         </div>
 
         <div className="flex gap-3 px-4 pb-6 pt-2">
@@ -210,7 +280,10 @@ export function SopGuide({ guide }: { guide: Guide }) {
             </button>
           ) : (
             <button
-              onClick={() => setView("hub")}
+              onClick={() => {
+                if (checkableSteps.length > 0) finishRun();
+                setView("hub");
+              }}
               className="flex flex-1 items-center justify-center gap-2 rounded-full bg-black px-5 py-4 font-sans text-[11px] uppercase tracking-[3px] text-gold"
             >
               <ClipboardCheck className="h-4 w-4" /> {t.done}
@@ -310,6 +383,39 @@ export function SopGuide({ guide }: { guide: Guide }) {
         )}
       </div>
 
+      {checkableSteps.length > 0 && (
+        <div className="px-4 pt-4">
+          <div className="rounded-xl border border-black/5 bg-white p-4">
+            <div className="flex items-center gap-3">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/5">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    checkedCount === checkableSteps.length ? "bg-emerald-500" : "bg-gold"
+                  }`}
+                  style={{ width: `${(checkedCount / checkableSteps.length) * 100}%` }}
+                />
+              </div>
+              <span className="flex-shrink-0 font-sans text-xs text-grey">
+                {t.progress(checkedCount, checkableSteps.length)}
+              </span>
+            </div>
+            {runStatus === "ABGESCHLOSSEN" && (
+              <div className="mt-3 flex items-center justify-between">
+                <span className="font-sans text-[11px] uppercase tracking-wide text-emerald-600">
+                  {t.runCompleted}
+                </span>
+                <button
+                  onClick={reopenRun}
+                  className="flex items-center gap-1 font-sans text-[11px] uppercase tracking-wide text-grey hover:text-gold-dark"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" /> {t.reopenRun}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-3 p-4">
         <Card
           icon={<Boxes className="h-6 w-6" strokeWidth={1.5} />}
@@ -321,7 +427,7 @@ export function SopGuide({ guide }: { guide: Guide }) {
           icon={<ClipboardCheck className="h-6 w-6" strokeWidth={1.5} />}
           title={t.steps}
           desc={t.stepsDesc}
-          badge={t.stepsBadge(steps.length)}
+          badge={checkableSteps.length > 0 ? t.progress(checkedCount, checkableSteps.length) : t.stepsBadge(steps.length)}
           onClick={() => {
             setStep(0);
             setView("steps");

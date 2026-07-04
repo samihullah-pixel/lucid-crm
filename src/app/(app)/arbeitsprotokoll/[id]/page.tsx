@@ -65,17 +65,27 @@ export default async function WorkLogDetailPage(props: { params: Promise<{ id: s
             </p>
           </div>
 
-          <span
-            className={`inline-block self-start rounded border px-3 py-1 font-sans text-[11px] uppercase tracking-wide ${
-              isComplete
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                : checked > 0
-                  ? "border-amber-200 bg-amber-50 text-amber-700"
-                  : "border-red-200 bg-red-50 text-red-700"
-            }`}
-          >
-            {isComplete ? "Erledigt" : checked > 0 ? "In Arbeit" : "Offen"}
-          </span>
+          <div className="flex items-center gap-3 self-start">
+            <a
+              href={`/api/work-log-pdf?workLogId=${workLog.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-sans text-[11px] uppercase tracking-wide text-grey hover:text-gold"
+            >
+              Als Checkliste (PDF)
+            </a>
+            <span
+              className={`inline-block rounded border px-3 py-1 font-sans text-[11px] uppercase tracking-wide ${
+                isComplete
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : checked > 0
+                    ? "border-amber-200 bg-amber-50 text-amber-700"
+                    : "border-red-200 bg-red-50 text-red-700"
+              }`}
+            >
+              {isComplete ? "Erledigt" : checked > 0 ? "In Arbeit" : "Offen"}
+            </span>
+          </div>
         </div>
       </div>
 
