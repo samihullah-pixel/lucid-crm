@@ -134,19 +134,23 @@ export function RunningShift({
     if (!file) return;
     setUploading(true);
     setError(null);
+    let stage = "preparing";
     try {
       const blob = await shrink(file);
+      stage = "uploading";
       const uploaded = await upload(`time/${entryId}/photo.jpg`, blob, {
         access: "public",
         handleUploadUrl: "/api/time-photo",
         clientPayload: entryId,
         contentType: "image/jpeg",
       });
+      stage = "saving";
       const result = await addPhoto(entryId, uploaded.url);
       if (!result.ok) throw new Error(result.error);
       setPhotos((cur) => [...cur, { id: result.id, url: uploaded.url }]);
-    } catch {
-      setError("Photo upload failed. Please try again.");
+    } catch (e) {
+      // Der technische Grund wird mit angezeigt, damit sich Fehler schnell eingrenzen lassen.
+      setError(`Photo upload failed while ${stage}: ${(e as Error).message}`);
     } finally {
       setUploading(false);
     }
