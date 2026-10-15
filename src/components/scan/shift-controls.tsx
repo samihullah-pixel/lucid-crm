@@ -150,7 +150,25 @@ export function RunningShift({
       setPhotos((cur) => [...cur, { id: result.id, url: uploaded.url }]);
     } catch (e) {
       // Der technische Grund wird mit angezeigt, damit sich Fehler schnell eingrenzen lassen.
-      setError(`Photo upload failed while ${stage}: ${(e as Error).message}`);
+      let reason = (e as Error).message;
+      if (stage === "uploading" && /client token/i.test(reason)) {
+        // Die Blob-Bibliothek verschweigt die Serverantwort: dieselbe Anfrage noch einmal stellen.
+        try {
+          const res = await fetch("/api/time-photo", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              type: "blob.generate-client-token",
+              payload: { pathname: `time/${entryId}/photo.jpg`, clientPayload: entryId, multipart: false },
+            }),
+          });
+          const body = (await res.text()).slice(0, 200);
+          reason += ` [server ${res.status}: ${body}]`;
+        } catch {
+          reason += " [server not reachable]";
+        }
+      }
+      setError(`Photo upload failed while ${stage}: ${reason}`);
     } finally {
       setUploading(false);
     }
