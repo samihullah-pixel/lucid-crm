@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { MIN_PHOTOS } from "@/lib/checklist";
 import { sendEmail, appBaseUrl } from "@/lib/email";
 import {
   MAX_PIN_ATTEMPTS,
@@ -164,7 +165,7 @@ export async function startShift(qrToken: string, geoInput: unknown): Promise<Ac
       ? ["", `Hinweis: ${FLAG_LABELS[FLAG.OVERLAPPING_OPEN]}.`]
       : []),
     "",
-    `Details: ${appBaseUrl()}/zeiterfassung`,
+    `Details: ${appBaseUrl()}/zeiterfassung/${entry.id}`,
   ]);
 
   revalidatePath(`/scan/${qrToken}`);
@@ -189,6 +190,23 @@ export async function endShift(
     return { ok: false, error: "Shift not found." };
   }
   if (entry.status !== "OPEN") return { ok: true };
+
+  // Pflichtfotos: ohne mindestens MIN_PHOTOS Fotos kein Ende (Prüfung auch serverseitig).
+  const photoCount = await prisma.timeEntryPhoto.count({ where: { timeEntryId: entry.id } });
+  if (photoCount < MIN_PHOTOS) {
+    return { ok: false, error: `Please add at least ${MIN_PHOTOS} photos before ending the shift.` };
+  }
+
+  const items = await prisma.checklistItem.findMany({
+    where: { template: { propertyId: entry.propertyId }, archived: false },
+    orderBy: { order: "asc" },
+  });
+  const checked = await prisma.timeEntryCheck.findMany({
+    where: { timeEntryId: entry.id, checked: true },
+    select: { itemId: true },
+  });
+  const checkedIds = new Set(checked.map((c) => c.itemId));
+  const openItems = items.filter((i) => !checkedIds.has(i.id));
 
   const now = new Date();
   const minutes = minutesBetween(entry.startedAt, now);
@@ -226,10 +244,17 @@ export async function endShift(
       entry.property.targetMinutes ? ` (Soll ${formatDuration(entry.property.targetMinutes)})` : ""
     }`,
     `Standort Ende: ${describeGeo(geo, entry.property.geofenceRadiusM)}`,
+    ...(items.length
+      ? [`Erledigt: ${items.length - openItems.length} von ${items.length}`]
+      : ["Erledigt: keine Checkliste für dieses Objekt hinterlegt"]),
+    ...(openItems.length
+      ? ["Offene Punkte:", ...openItems.map((i) => `- ${i.section}: ${i.text}`)]
+      : []),
     `Notizen: ${notes ?? "–"}`,
+    `Fotos: ${photoCount}`,
     ...(warnings.length ? ["", "Warnungen:", ...warnings.map((w) => `- ${w}`)] : []),
     "",
-    `Details: ${appBaseUrl()}/zeiterfassung`,
+    `Details und Fotos: ${appBaseUrl()}/zeiterfassung/${entry.id}`,
   ]);
 
   revalidatePath(`/scan/${entry.property.qrToken}`);

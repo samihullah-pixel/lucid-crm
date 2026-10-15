@@ -1,6 +1,7 @@
 import { regenerateQrToken } from "@/actions/properties";
 import { DeleteButton } from "@/components/ui/delete-button";
 import { appBaseUrl } from "@/lib/email";
+import Link from "next/link";
 
 /** Scan-Link des Objekts. Das Token ist zufällig und enthält keinen lesbaren Namen. */
 export function QrTokenPanel({ propertyId, qrToken }: { propertyId: string; qrToken: string | null }) {
@@ -8,6 +9,12 @@ export function QrTokenPanel({ propertyId, qrToken }: { propertyId: string; qrTo
 
   return (
     <div className="border border-gold/20 bg-white p-6">
+      <Link
+        href={`/properties/${propertyId}/checklist`}
+        className="mb-5 inline-block font-sans text-[11px] uppercase tracking-wide text-gold-dark hover:text-gold"
+      >
+        Checkliste bearbeiten
+      </Link>
       <p className="font-sans text-[11px] uppercase tracking-[3px] text-gold-dark">Scan-Link</p>
       {qrToken ? (
         <>

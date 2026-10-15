@@ -24,6 +24,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/login") ||
     pathname.startsWith("/sop") ||
     pathname.startsWith("/scan") ||
+    pathname === "/api/time-photo" ||
     pathname === "/me" ||
     pathname.startsWith("/me/");
 

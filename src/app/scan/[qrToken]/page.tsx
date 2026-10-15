@@ -6,7 +6,8 @@ import { getCurrentEmployee, shortName } from "@/lib/employee-session";
 import { formatTime } from "@/lib/time-entry";
 import { ScanShell } from "@/components/scan/scan-shell";
 import { PinLogin } from "@/components/scan/pin-login";
-import { EndShift, StartShift } from "@/components/scan/shift-controls";
+import { RunningShift, StartShift } from "@/components/scan/shift-controls";
+import { MIN_PHOTOS } from "@/lib/checklist";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,19 @@ export default async function ScanPage(props: {
     orderBy: { startedAt: "desc" },
   });
   const running = openEntries.find((e) => e.propertyId === property.id);
+  const runningData = running
+    ? await Promise.all([
+        prisma.checklistItem.findMany({
+          where: { template: { propertyId: property.id }, archived: false },
+          orderBy: { order: "asc" },
+        }),
+        prisma.timeEntryCheck.findMany({ where: { timeEntryId: running.id, checked: true } }),
+        prisma.timeEntryPhoto.findMany({
+          where: { timeEntryId: running.id },
+          orderBy: { uploadedAt: "asc" },
+        }),
+      ])
+    : null;
   const logout = employeeLogout.bind(null, here);
 
   return (
@@ -72,7 +86,17 @@ export default async function ScanPage(props: {
               Since {formatTime(running.startedAt)}
             </p>
           </div>
-          <EndShift entryId={running.id} />
+          <RunningShift
+            entryId={running.id}
+            minPhotos={MIN_PHOTOS}
+            initialItems={runningData![0].map((i) => ({
+              id: i.id,
+              section: i.section,
+              text: i.text,
+              checked: runningData![1].some((c) => c.itemId === i.id),
+            }))}
+            initialPhotos={runningData![2].map((p) => ({ id: p.id, url: p.url }))}
+          />
         </div>
       ) : (
         <StartShift qrToken={qrToken} hasOtherOpenShift={openEntries.length > 0} />
