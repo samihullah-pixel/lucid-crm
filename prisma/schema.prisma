@@ -76,10 +76,17 @@ model Employee {
   phone            String?
   color            String?
   isActive         Boolean           @default(true)
+  // QR-Zeiterfassung: persönlicher Login per PIN (nur der Hash wird gespeichert).
+  pinHash             String?
+  // Hochgezählt bei jeder PIN-Änderung -> macht alte Sessions ungültig.
+  pinVersion          Int               @default(0)
+  pinFailedAttempts   Int               @default(0)
+  pinLockedUntil      DateTime?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   appointments     Appointment[]
   cleaningJobs     CleaningJob[]
+  timeEntries         TimeEntry[]
   shiftAssignments    ShiftAssignment[]
   inspectionProtocols InspectionProtocol[]
   workLogEntries      WorkLogEntry[]
@@ -312,10 +319,20 @@ model Property {
   safetyInstructions   String?
   roomList             String?
   notes                String?
+  // QR-Zeiterfassung: Standort für die Geofence-Prüfung, Sollzeit, Scan-Token.
+  latitude             Float?
+  longitude            Float?
+  geofenceRadiusM      Int                  @default(150)
+  targetMinutes        Int?
+  qrToken              String?              @unique
+  // Kundenbericht nur, wenn hier eine Adresse hinterlegt ist.
+  customerReportEmail  String?
   isActive             Boolean              @default(true)
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
   customer             Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  checklistTemplate    ChecklistTemplate?
+  timeEntries          TimeEntry[]
   serviceContracts     ServiceContract[]
   appointments         Appointment[]
   cleaningJobs         CleaningJob[]
@@ -795,4 +812,95 @@ model SubcontractRequest {
   @@index([propertyId])
   @@index([appointmentId])
   @@index([status])
+}
+
+// ── QR-Zeiterfassung ────────────────────────────────────────────────────────
+// Hinweis: "Shift"/"ShiftAssignment" gehören dem Dienstplan, daher heißt die
+// erfasste Arbeitszeit hier TimeEntry.
+
+enum TimeEntryStatus {
+  OPEN
+  DONE
+  REVIEW
+}
+
+model ChecklistTemplate {
+  id         String          @id @default(cuid())
+  propertyId String          @unique
+  property   Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  items      ChecklistItem[]
+}
+
+model ChecklistItem {
+  id         String            @id @default(cuid())
+  templateId String
+  template   ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  section    String
+  text       String
+  order      Int               @default(0)
+  checks     TimeEntryCheck[]
+
+  @@index([templateId])
+}
+
+// Gesetzliche Aufbewahrung (§ 17 MiLoG, 2 Jahre): Mitarbeiter und Objekte mit
+// Zeiteinträgen lassen sich deshalb nicht löschen (Restrict).
+model TimeEntry {
+  id            String           @id @default(cuid())
+  // Lesbare Nummer, z. B. S-2026-0001
+  number        String           @unique
+  employeeId    String
+  employee      Employee         @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  propertyId    String
+  property      Property         @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  // Beide Zeiten werden ausschließlich auf dem Server gesetzt.
+  startedAt     DateTime         @default(now())
+  endedAt       DateTime?
+  startLat      Float?
+  startLng      Float?
+  startAccuracy Float?
+  startDistanceM Int?
+  endLat        Float?
+  endLng        Float?
+  endAccuracy   Float?
+  endDistanceM  Int?
+  flags         String[]         @default([])
+  notes         String?
+  status        TimeEntryStatus  @default(OPEN)
+  // Admin hat einen "prüfen"-Eintrag durchgesehen.
+  reviewedAt    DateTime?
+  customerReportSentAt DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  checks        TimeEntryCheck[]
+  photos        TimeEntryPhoto[]
+
+  @@index([employeeId])
+  @@index([propertyId])
+  @@index([startedAt])
+  @@index([status])
+}
+
+model TimeEntryCheck {
+  id          String        @id @default(cuid())
+  timeEntryId String
+  timeEntry   TimeEntry     @relation(fields: [timeEntryId], references: [id], onDelete: Cascade)
+  itemId      String
+  item        ChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  checked     Boolean       @default(false)
+
+  @@unique([timeEntryId, itemId])
+  @@index([itemId])
+}
+
+model TimeEntryPhoto {
+  id          String    @id @default(cuid())
+  timeEntryId String
+  timeEntry   TimeEntry @relation(fields: [timeEntryId], references: [id], onDelete: Cascade)
+  url         String
+  uploadedAt  DateTime  @default(now())
+
+  @@index([timeEntryId])
 }

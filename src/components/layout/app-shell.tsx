@@ -22,6 +22,7 @@ import {
   Search,
   BookOpen,
   Handshake,
+  Timer,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/actions/auth";
@@ -47,6 +48,7 @@ const navigation: NavGroup[] = [
   {
     title: "Einsätze",
     items: [
+      { href: "/zeiterfassung", label: "Zeiterfassung", icon: Timer },
       { href: "/arbeitsprotokoll", label: "Arbeitsprotokoll", icon: ClipboardCheck },
       { href: "/sop-procedures", label: "Anleitungen", icon: BookOpen },
       { href: "/protokolle", label: "Kontrolle", icon: ClipboardList },

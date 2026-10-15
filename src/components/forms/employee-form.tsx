@@ -8,6 +8,7 @@ type Employee = {
   phone: string | null;
   color: string | null;
   isActive: boolean;
+  pinHash?: string | null;
 };
 
 export function EmployeeForm({ initialValues }: { initialValues?: Employee }) {
@@ -71,6 +72,23 @@ export function EmployeeForm({ initialValues }: { initialValues?: Employee }) {
             defaultValue={initialValues?.color ?? "#c9a96e"}
             className="h-10 w-20 rounded border border-black/15"
           />
+        </div>
+        <div>
+          <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">
+            PIN für Zeiterfassung (4–6 Ziffern)
+          </label>
+          <input
+            name="pin"
+            inputMode="numeric"
+            pattern="[0-9]{4,6}"
+            maxLength={6}
+            autoComplete="off"
+            placeholder={initialValues?.pinHash ? "PIN gesetzt – leer lassen = unverändert" : "z. B. 4821"}
+            className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+          />
+          <p className="mt-1 font-sans text-xs font-light text-grey">
+            Mit Name und PIN meldet sich der Mitarbeiter nach dem QR-Scan an. Eine neue PIN meldet das Handy ab.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <input

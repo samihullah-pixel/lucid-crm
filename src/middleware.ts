@@ -18,8 +18,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Public, login-free on-site guide reached via QR code.
-  const isPublic = pathname.startsWith("/login") || pathname.startsWith("/sop");
+  // Public pages reached via QR code: the on-site guide (/sop) and the employee
+  // time tracking (/scan, /me), which has its own PIN login per employee.
+  const isPublic =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/sop") ||
+    pathname.startsWith("/scan") ||
+    pathname === "/me" ||
+    pathname.startsWith("/me/");
 
   const isApp = host.startsWith("app.");
   if (isApp && !isPublic) {
