@@ -43,6 +43,7 @@ export default async function EmployeesPage() {
                   <th className="py-2 pr-4">E-Mail</th>
                   <th className="py-2 pr-4">Telefon</th>
                   <th className="py-2 pr-4">Status</th>
+                  <th className="py-2 pr-4">PIN</th>
                   <th className="py-2 pr-4">Arbeitsplan (PDF)</th>
                   <th className="py-2 pr-4" />
                 </tr>
@@ -56,6 +57,7 @@ export default async function EmployeesPage() {
                       <td className="py-2 pr-4">{e.email ?? "—"}</td>
                       <td className="py-2 pr-4">{e.phone ?? "—"}</td>
                       <td className="py-2 pr-4">{e.isActive ? "Aktiv" : "Inaktiv"}</td>
+                      <td className="py-2 pr-4">{e.pinHash ? "gesetzt" : "—"}</td>
                       <td className="py-2 pr-4">
                         <form action="/api/work-schedule" method="get" className="flex items-center gap-2">
                           <input type="hidden" name="employeeId" value={e.id} />

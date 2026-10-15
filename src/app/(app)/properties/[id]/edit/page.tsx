@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PropertyForm } from "@/components/forms/property-form";
+import { QrTokenPanel } from "@/components/forms/qr-token-panel";
 
 export default async function EditPropertyPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -23,6 +24,7 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
         </p>
       </div>
       <PropertyForm customers={customers} initialValues={property} />
+      <QrTokenPanel propertyId={property.id} qrToken={property.qrToken} />
     </div>
   );
 }

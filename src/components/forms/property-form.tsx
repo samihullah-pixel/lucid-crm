@@ -20,6 +20,11 @@ type PropertyInitialValues = {
   hasElevator: boolean;
   floor: string | null;
   notes: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  geofenceRadiusM: number;
+  targetMinutes: number | null;
+  customerReportEmail: string | null;
 };
 
 export function PropertyForm({
@@ -107,6 +112,37 @@ export function PropertyForm({
         <div>
           <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Parkmoeglichkeit</label>
           <input name="parkingInfo" defaultValue={initialValues?.parkingInfo ?? ""} className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+        </div>
+        <div className="md:col-span-2 border-t border-black/10 pt-4">
+          <p className="font-sans text-[11px] uppercase tracking-[3px] text-gold-dark">QR-Zeiterfassung</p>
+        </div>
+        <div>
+          <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Koordinaten</label>
+          <input
+            name="coordinates"
+            placeholder="53.5511, 9.9937"
+            defaultValue={
+              initialValues?.latitude != null && initialValues?.longitude != null
+                ? `${initialValues.latitude}, ${initialValues.longitude}`
+                : ""
+            }
+            className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none"
+          />
+          <p className="mt-1 font-sans text-xs font-light text-grey">
+            In Google Maps mit Rechtsklick auf das Objekt die Koordinaten anklicken (kopiert sie) und hier einfügen.
+          </p>
+        </div>
+        <div>
+          <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Radius (Meter)</label>
+          <input name="geofenceRadiusM" type="number" min={10} defaultValue={initialValues?.geofenceRadiusM ?? 150} className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+        </div>
+        <div>
+          <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Sollzeit (Minuten)</label>
+          <input name="targetMinutes" type="number" min={1} placeholder="z. B. 90" defaultValue={initialValues?.targetMinutes ?? ""} className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
+        </div>
+        <div>
+          <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Kundenbericht an (optional)</label>
+          <input name="customerReportEmail" type="email" defaultValue={initialValues?.customerReportEmail ?? ""} className="w-full rounded border border-black/15 px-3 py-2 font-sans text-sm focus:border-gold focus:outline-none" />
         </div>
         <div className="md:col-span-2">
           <label className="mb-1 block font-sans text-[11px] uppercase tracking-wide text-grey">Notizen</label>

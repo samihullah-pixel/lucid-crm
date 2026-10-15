@@ -6,6 +6,7 @@ import {
   CacheFirst,
   ExpirationPlugin,
   NetworkFirst,
+  NetworkOnly,
   Serwist,
 } from "serwist";
 
@@ -47,6 +48,12 @@ const serwist = new Serwist({
         networkTimeoutSeconds: 5,
         plugins: [new CacheableResponsePlugin({ statuses: [0, 200] })],
       }),
+    },
+    // Zeiterfassung: Start/Ende brauchen Server und Live-Standort, nie veraltete Seiten
+    {
+      matcher: ({ url }) =>
+        url.pathname.startsWith("/scan") || url.pathname === "/me",
+      handler: new NetworkOnly(),
     },
     // Google Fonts (Cormorant / Jost) offline verfügbar halten
     {
