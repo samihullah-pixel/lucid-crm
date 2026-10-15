@@ -840,6 +840,8 @@ model ChecklistItem {
   section    String
   text       String
   order      Int               @default(0)
+  // Entfernte Punkte werden archiviert statt gelöscht, damit die Häkchen alter Schichten erhalten bleiben.
+  archived   Boolean           @default(false)
   checks     TimeEntryCheck[]
 
   @@index([templateId])
