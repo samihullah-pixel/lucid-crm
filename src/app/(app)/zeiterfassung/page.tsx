@@ -84,6 +84,16 @@ export default async function TimeEntriesPage(props: {
         </Link>
       </form>
 
+      <div className="flex flex-wrap items-center gap-4 font-sans text-[11px] uppercase tracking-wide">
+        <span className="text-grey">CSV für die Lohnabrechnung ({sp.month || "aktueller Monat"}):</span>
+        <a href={`/api/time-export${sp.month ? `?month=${sp.month}` : ""}`} className="text-gold-dark hover:text-gold">
+          Stunden pro Mitarbeiter
+        </a>
+        <a href={`/api/time-export?detail=1${sp.month ? `&month=${sp.month}` : ""}`} className="text-gold-dark hover:text-gold">
+          Alle Schichten
+        </a>
+      </div>
+
       <div className="rounded-lg border border-gold/20 bg-white p-6">
         {entries.length === 0 ? (
           <p className="font-sans text-sm font-light text-grey">Keine Schichten gefunden.</p>

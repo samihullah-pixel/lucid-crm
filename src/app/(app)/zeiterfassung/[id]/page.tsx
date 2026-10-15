@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { markReviewed } from "@/actions/checklist";
+import { loadCustomerReport } from "@/actions/customer-report";
+import { SendReportButton } from "@/components/forms/send-report-button";
 import {
   FLAG_LABELS,
   formatDateTime,
@@ -77,6 +79,8 @@ export default async function TimeEntryDetailPage(props: { params: Promise<{ id:
   const minutes = entry.endedAt ? minutesBetween(entry.startedAt, entry.endedAt) : null;
   const review = entry.status === "REVIEW";
   const markDone = markReviewed.bind(null, entry.id);
+  const reportEmail = entry.property.customerReportEmail;
+  const report = reportEmail ? (await loadCustomerReport(entry.id))?.report ?? null : null;
 
   return (
     <div className="space-y-6">
@@ -154,6 +158,39 @@ export default async function TimeEntryDetailPage(props: { params: Promise<{ id:
                 </ul>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-lg border border-gold/20 bg-white p-6">
+        <h2 className="font-sans text-[11px] uppercase tracking-[3px] text-gold-dark">Kundenbericht</h2>
+        {!reportEmail ? (
+          <p className="mt-3 text-sm font-light text-grey">
+            Nicht aktiviert. Hinterlege beim Objekt eine Kunden-E-Mail, um Berichte zu verschicken.
+          </p>
+        ) : (
+          <div className="mt-3 space-y-4 text-sm">
+            <p className="font-light text-grey">
+              Empfänger: {reportEmail}. Der Bericht enthält Datum, Einsatzzeit und erledigte Leistungen, keine Fotos, Preise oder internen Hinweise. Er wird nur nach deiner Freigabe gesendet.
+            </p>
+            {report && (
+              <pre className="whitespace-pre-wrap rounded bg-light p-4 font-sans text-sm font-light">
+                {report.subject}
+                {"\n\n"}
+                {report.text}
+              </pre>
+            )}
+            {entry.customerReportSentAt ? (
+              <p className="text-gold-dark">Gesendet am {formatDateTime(entry.customerReportSentAt)}</p>
+            ) : entry.status === "DONE" ? (
+              <SendReportButton entryId={entry.id} email={reportEmail} />
+            ) : (
+              <p className="font-light text-grey">
+                {entry.status === "REVIEW"
+                  ? "Erst nach dem Markieren als geprüft sendbar."
+                  : "Erst nach Ende der Schicht sendbar."}
+              </p>
+            )}
           </div>
         )}
       </div>

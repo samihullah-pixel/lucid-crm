@@ -26,6 +26,14 @@ export function QrTokenPanel({ propertyId, qrToken }: { propertyId: string; qrTo
           >
             {appBaseUrl()}/scan/{qrToken}
           </a>
+          <a
+            href={`/api/qr-pdf?propertyId=${propertyId}`}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-block rounded-full border border-gold px-4 py-2 font-sans text-[11px] uppercase tracking-wide text-gold-dark hover:bg-gold/10"
+          >
+            QR-Code als PDF (A6)
+          </a>
           <p className="mt-2 font-sans text-xs font-light text-grey">
             Dieser Link steckt im QR-Code. Wurde der Code abfotografiert, erzeuge ein neues Token. Der alte Code funktioniert dann nicht mehr.
           </p>
