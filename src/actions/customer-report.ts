@@ -27,7 +27,6 @@ export async function loadCustomerReport(entryId: string) {
     ? buildCustomerReport({
         propertyName: entry.property.name,
         startedAt: entry.startedAt,
-        endedAt: entry.endedAt,
         doneItems,
       })
     : null;
