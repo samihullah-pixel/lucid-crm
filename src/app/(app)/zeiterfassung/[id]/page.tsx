@@ -171,7 +171,7 @@ export default async function TimeEntryDetailPage(props: { params: Promise<{ id:
         ) : (
           <div className="mt-3 space-y-4 text-sm">
             <p className="font-light text-grey">
-              Empfänger: {reportEmail}. Der Bericht enthält Datum, Einsatzzeit und erledigte Leistungen, keine Fotos, Preise oder internen Hinweise. Er wird nur nach deiner Freigabe gesendet.
+              Empfänger: {reportEmail}. Der Bericht nennt nur den Einsatztag und die erledigten Leistungen, keine Uhrzeiten, Fotos, Preise oder internen Hinweise. Er wird nur nach deiner Freigabe gesendet.
             </p>
             {report && (
               <pre className="whitespace-pre-wrap rounded bg-light p-4 font-sans text-sm font-light">

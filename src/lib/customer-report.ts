@@ -1,18 +1,17 @@
-import { escapeHtml, formatDate, formatTime } from "@/lib/time-entry";
+import { escapeHtml, formatDate } from "@/lib/time-entry";
 
 type ReportInput = {
   propertyName: string;
   startedAt: Date;
-  endedAt: Date;
   /** Nur erledigte Punkte, in Checklisten-Reihenfolge. */
   doneItems: { section: string; text: string }[];
 };
 
 /**
- * Kundenbericht: Datum, Einsatzzeit und erledigte Leistungen.
- * Bewusst ohne Fotos, Preise, Mitarbeiternamen, Notizen und interne Hinweise.
+ * Kundenbericht: nur der Einsatztag und die erledigten Leistungen.
+ * Bewusst ohne Uhrzeiten, Fotos, Preise, Mitarbeiternamen, Notizen und interne Hinweise.
  */
-export function buildCustomerReport({ propertyName, startedAt, endedAt, doneItems }: ReportInput) {
+export function buildCustomerReport({ propertyName, startedAt, doneItems }: ReportInput) {
   const date = formatDate(startedAt);
   const subject = `Reinigungsbericht ${propertyName} – ${date}`;
 
@@ -20,10 +19,7 @@ export function buildCustomerReport({ propertyName, startedAt, endedAt, doneItem
   const intro = [
     "Guten Tag,",
     "",
-    `Ihr Objekt „${propertyName}“ wurde gereinigt.`,
-    "",
-    `Datum: ${date}`,
-    `Einsatzzeit: ${formatTime(startedAt)} bis ${formatTime(endedAt)} Uhr`,
+    `Ihr Objekt „${propertyName}“ wurde am ${date} gereinigt.`,
     "",
   ];
   const services =
@@ -55,8 +51,7 @@ export function buildCustomerReport({ propertyName, startedAt, endedAt, doneItem
       : "<p>Die Reinigung wurde wie vereinbart durchgeführt.</p>";
   const html = `<div style="font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.6;color:#141414">
 <p>Guten Tag,</p>
-<p>Ihr Objekt „${escapeHtml(propertyName)}“ wurde gereinigt.</p>
-<p>Datum: ${date}<br>Einsatzzeit: ${formatTime(startedAt)} bis ${formatTime(endedAt)} Uhr</p>
+<p>Ihr Objekt „${escapeHtml(propertyName)}“ wurde am ${date} gereinigt.</p>
 ${htmlServices}
 <p style="margin-top:24px">Mit freundlichen Grüßen<br>Ihr Lucid* Team</p>
 </div>`;
